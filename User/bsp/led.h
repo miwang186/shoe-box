@@ -1,6 +1,6 @@
 #ifndef LED_H_H
 #define LED_H_H
-
+#include "stm32f10x.h"
 #define  LED_RED_OFF       GPIO_SetBits(GPIOG,GPIO_Pin_6)
 #define  LED_GREEN_OFF     GPIO_SetBits(GPIOA,GPIO_Pin_8)
 #define  LED_YELLOW_OFF    GPIO_SetBits(GPIOB,GPIO_Pin_8)

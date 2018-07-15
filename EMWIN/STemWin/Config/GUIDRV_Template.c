@@ -57,7 +57,7 @@ Purpose     : Template driver, could be used as starting point for new
 #include "LCD_Private.h"
 #include "GUI_Private.h"
 #include "LCD_ConfDefaults.h"
-#include "ILI93xx.h" 
+#include "user_ili9341_lcd.h"
 /*********************************************************************
 *
 *       Defines
@@ -131,7 +131,7 @@ typedef struct {
  打点函数
 */
 static void _SetPixelIndex(GUI_DEVICE * pDevice, int x, int y, int PixelIndex) {
-	LCD_Fast_DrawPoint(x,y,PixelIndex);
+	LCD_SetPoint(x,y,PixelIndex);
 }
 
 
@@ -154,7 +154,7 @@ static unsigned int _GetPixelIndex(GUI_DEVICE * pDevice, int x, int y) {
     GUI_USE_PARA(x);
     GUI_USE_PARA(y);
     {
-			PixelIndex = LCD_ReadPoint(x,y);
+			PixelIndex = LCD_GetPoint(x,y);
     }
     #if (LCD_MIRROR_X == 0) && (LCD_MIRROR_Y == 0) && (LCD_SWAP_XY == 0)
       #undef xPhys
@@ -440,18 +440,14 @@ static void  _DrawBitLine8BPP(GUI_DEVICE * pDevice, int x, int y, U8 const GUI_U
 static void _DrawBitLine16BPP(GUI_DEVICE * pDevice, int x, int y, U16 const GUI_UNI_PTR * p, int xsize) {
 	
 	LCD_PIXELINDEX pixel;
+	
 	LCD_SetCursor(x,y);
 	
-	LCD_RS_CLR;
- 	LCD_CS_CLR; 
-	DATAOUT(lcddev.wramcmd);//写指令  
-	LCD_WR_CLR; 
-	LCD_WR_SET; 
- 	LCD_CS_SET; 
+	LCD_WriteRAM_Prepare();
 	for (;xsize > 0; xsize--, x++, p++) 
 	{
 		pixel = *p;
-        LCD_WR_DATA(pixel);		//写数据;
+        LCD_ILI9341_Parameter(pixel);		//写数据;
     }
 }
 

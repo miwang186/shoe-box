@@ -119,7 +119,7 @@ void LCD_FSMC_Config(void)
  **************************************************************************************/
 void LCD_Rst(void)
 {			
-		GPIO_ResetBits(GPIOD, GPIO_Pin_11);	 //低电平复位
+	GPIO_ResetBits(GPIOD, GPIO_Pin_11);	 //低电平复位
     sw_delay_ms(30); 					   
     GPIO_SetBits(GPIOD, GPIO_Pin_11);		 	 
     sw_delay_ms(30);
@@ -376,25 +376,29 @@ void Lcd_GramScan( uint16_t option )
 	/* write gram start */
 	LCD_ILI9341_CMD(0x2C);
 }
-
+//开始写GRAM
+void LCD_WriteRAM_Prepare(void)
+{
+	/* memory write */
+	LCD_ILI9341_CMD(0x2c);	
+} 
 void LCD_Clear(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color)
 {
 	uint32_t i = 0;
-	
 	/* column address control set */
 	LCD_ILI9341_CMD(0X2A);
 	LCD_ILI9341_Parameter( x >> 8 );	 /* 先高8位，然后低8位 */
 	LCD_ILI9341_Parameter( x & 0xff );	         /* column start   */ 
 	LCD_ILI9341_Parameter( (x+width-1) >> 8 );   /* column end   */
 	LCD_ILI9341_Parameter( (x+width-1) & 0xff );
-	
+
 	/* page address control set */	
-  LCD_ILI9341_CMD(0X2B); 			     
+	LCD_ILI9341_CMD(0X2B); 			     
 	LCD_ILI9341_Parameter( y >> 8 );			/* page start   */
 	LCD_ILI9341_Parameter( y & 0xff );
 	LCD_ILI9341_Parameter( (y+height-1) >> 8);  /* page end     */
 	LCD_ILI9341_Parameter( (y+height-1) & 0xff);
-	
+
 	/* memory write */
 	LCD_ILI9341_CMD(0x2c);	
 		
@@ -408,17 +412,13 @@ void LCD_Clear(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t
 
 void LCD_SetCursor(uint16_t x, uint16_t y)	
 {	
-	LCD_ILI9341_CMD(0X2A); 				 /* 设置X坐标 */
-	LCD_ILI9341_Parameter(x>>8);	 /* 先高8位，然后低8位 */
-	LCD_ILI9341_Parameter(x&0xff);	 /* 设置起始点和结束点*/
-	LCD_ILI9341_Parameter(x>>8);
-	LCD_ILI9341_Parameter(x&0xff);
+	LCD_ILI9341_CMD(0X2A); 				/* 设置X坐标 */
+	LCD_ILI9341_Parameter(x>>8);	 	/* 先高8位，然后低8位 */
+	LCD_ILI9341_Parameter(x&0xff);		/* 设置起始点和结束点*/
 
     LCD_ILI9341_CMD(0X2B); 			     /* 设置Y坐标*/
 	LCD_ILI9341_Parameter(y>>8);
-	LCD_ILI9341_Parameter(y&0xff);
-	LCD_ILI9341_Parameter(y>>8);
-	LCD_ILI9341_Parameter(y&0xff);		     
+	LCD_ILI9341_Parameter(y&0xff);	     
 }
 
 //  _ _ _ _ _ _
@@ -450,6 +450,24 @@ void LCD_OpenWindow(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
 	LCD_ILI9341_Parameter( (y+height-1) & 0xff);
 }
 
+//在指定区域内填充指定颜色
+//区域大小:(xend-xsta+1)*(yend-ysta+1)
+//xsta
+//color:要填充的颜色
+void LCD_Fill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t color)
+{          
+	uint16_t i,j;
+	uint16_t xlen=0;
+	
+	xlen=ex-sx+1;	 
+	for(i=sy;i<=ey;i++)
+	{
+		LCD_SetCursor(sx,i);      				//设置光标位置 
+		LCD_WriteRAM_Prepare();     			//开始写入GRAM	  
+		for(j=0;j<xlen;j++)
+			LCD_WR_Data(color);	//设置光标位置 	    
+	}
+}  
 void LCD_SetPoint(uint16_t x , uint16_t y , uint16_t color)	
 {	
 	LCD_SetCursor(x, y);

@@ -1,3 +1,6 @@
+#ifndef __TOUCH_H__
+#define __TOUCH_H__
+
 #include "stm32f10x.h"
 
 
@@ -37,7 +40,7 @@ extern Coordinate  display ;
 #define	CHX 	0x90 	//通道Y+的选择控制字	
 #define	CHY 	0xd0	//通道X+的选择控制字
 
-
+uint16_t TP_Read_XOY(uint8_t xy);
 void xpt2046_Init(void);
 int Touch_Calibrate(void);
 void Palette_Init(void);
@@ -47,4 +50,5 @@ FunctionalState Get_touch_point(Coordinate * displayPtr,
 Coordinate *Read_2046_2(void);
 void Palette_draw_point(uint16_t x, uint16_t y);
 
+#endif
 

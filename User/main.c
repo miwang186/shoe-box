@@ -23,7 +23,12 @@
 //delay这里报错的原因是：delay函数用汇编实现的，导致了MDK误报。
 #include "delay.h"
 #include "main.h"
+#include "timer.h"
+#include "malloc.h"	  
 
+
+#include "GUI.h"
+#include "GUIDemo.h"
 extern volatile uint8_t touch_flag;
 
 void display_temp()
@@ -48,32 +53,37 @@ int main(void)
 	//初始化TFTLCD2.8寸屏
 	LCD_Init();	
 	DHT11_GPIO_Config(); 
-	SMBus_Init();
+	SMBus_Init();	/*GY 906 红外测温*/
 	LED_Init();    //LED指示灯初始化函数
 	USART1_Init(); //USART1串口初始化函数
 	USART3_Init(); //USART2串口初始化函数	
-//	//指定位置显示一串红色字体的字符串
 	Lcd_GramScan(2);
-	//清屏为黑色背景
-	LCD_Clear(0, 0, 320, 240, BACKGROUND);	 
 
+	LCD_Clear(0, 0, 320, 240, BLUE);	 	//清屏为黑色背景
+	xpt2046_Init();			//初始化xpt2046用IO口（模拟SPI、中断IO）	
+	mem_init(); 			//初始化内部内存池
 	
-//  //初始化xpt2046用IO口（模拟SPI、中断IO）
-//  xpt2046_Init();
-//  //初始化xpt2046用IO口（模拟SPI、中断IO）
-//  while(Touch_Calibrate() !=0);
- 
+	TIM3_Int_Init(999,71);	//1KHZ 定时器1ms 
+	TIM6_Int_Init(999,719);	//10ms中断
+	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC,ENABLE);//使能CRC时钟，否则STemWin不能使用 
+	
+	//	while(Touch_Calibrate() !=0);
+ 	WM_SetCreateFlags(WM_CF_MEMDEV);
+	GUI_Init();
+//	Touch_MainTask();
+	MainTask();
 
-  //主循环	
+//主循环	
 	while(1)	
 	{
+
 		while(1)
 		{		
 			LED_Switch(LED_ON,LED_R|LED_G|LED_Y|LED_B);	   //点亮开发板四个指示灯，表示程序进入主流程
 			ESP8266_Init();    //ESP8266初始化
 			ESP8266_DevLink(DEVICEID,APIKEY,20);    //和平台建立设备连接
 			LED_Switch(LED_OFF,LED_R|LED_G|LED_Y|LED_B); //熄灭开发板四个指示灯，表示程序完成设备连接，进入数据发送循环
-		
+			
 			while(1)
 			{								
 					if(!(ESP8266_CheckStatus(30)))    //检测ESP8266模块连接状态

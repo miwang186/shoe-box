@@ -1,3 +1,6 @@
+#ifndef __LCD_H
+#define __LCD_H		
+
 #include "stm32f10x.h"
 
 /***************************************************************************************
@@ -37,7 +40,7 @@ RAM基地址 = 0X6C000800 = 0X6C000000+2^10*2 = 0X6C000000 + 0X800 = 0x6C000800
 
 #define BACKGROUND		BLACK
 
-#define WHITE		 		 0xFFFF	                   // 白色 
+#define WHITE		 0xFFFF	                   // 白色 
 #define BLACK        0x0000	                   // 黑色 
 #define GREY         0xF7DE                    // 灰色 
 #define BLUE         0x001F	                   // 蓝色 
@@ -53,7 +56,9 @@ RAM基地址 = 0X6C000800 = 0X6C000000+2^10*2 = 0X6C000000 + 0X800 = 0x6C000800
 
 void LCD_Init(void);
 void Lcd_GramScan( uint16_t option );
+void LCD_WriteRAM_Prepare(void);
 void LCD_Clear(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color);
+void LCD_Fill(uint16_t sx,uint16_t sy,uint16_t ex,uint16_t ey,uint16_t color);
 void LCD_SetCursor(uint16_t x, uint16_t y);
 void LCD_OpenWindow(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 void LCD_SetPoint(uint16_t x , uint16_t y , uint16_t color);
@@ -61,5 +66,4 @@ uint16_t LCD_GetPoint(uint16_t x , uint16_t y);
 void LCD_DispChar(uint16_t x, uint16_t y, uint8_t ascii, uint16_t color);
 void LCD_DispStr(uint16_t x, uint16_t y,  uint16_t color,char *fmt, ...);
 void LCD_DisNum(uint16_t x, uint16_t y, uint32_t num, uint16_t color);
-
-
+#endif 

@@ -31,9 +31,9 @@ Purpose     : Config / System dependent externals for GUI
 ---------------------------END-OF-HEADER------------------------------
 */
 #include "GUI.h"
-#include "touch.h"
-#include "ILI93xx.h"
-#include "usart.h"
+#include "user_ili9341_lcd.h"
+#include "user_xpt2046.h"
+#include "usart1.h"
 
 
 void GUI_TOUCH_X_ActivateX(void) 
@@ -49,30 +49,12 @@ void GUI_TOUCH_X_ActivateY(void)
 
 int  GUI_TOUCH_X_MeasureX(void) 
 {
-	int32_t xvalue;
-	if((lcddev.id == 0X5510) || (lcddev.id == 0X1963)) //电容屏的触摸值获取(使用NT5510和SSD1963芯片的4.3寸和7寸屏都是电容屏)
-	{
-		tp_dev.scan(0);
-		xvalue=tp_dev.x[0];
-		return xvalue;
-	}else				//电阻屏
-	{
-		return TP_Read_XOY(0XD0);  //CMD_RDX=0XD0
-	}
+	return TP_Read_XOY(0XD0);  //CMD_RDX=0XD0
 }
 
 int  GUI_TOUCH_X_MeasureY(void) 
 {	
-	int32_t yvalue;
-	if((lcddev.id == 0X5510) || (lcddev.id == 0X1963))//电容屏的触摸值获取(使用NT5510和SSD1963芯片的4.3寸和7寸屏都是电容屏)
-	{
-		tp_dev.scan(0);
-		yvalue = tp_dev.y[0];
-		return yvalue;
-	}else				//电阻屏
-	{
-		return TP_Read_XOY(0X90);  //CMD_RDX=0XD0
-	}
+	return TP_Read_XOY(0X90);  //CMD_RDX=0XD0
 }
 
 
