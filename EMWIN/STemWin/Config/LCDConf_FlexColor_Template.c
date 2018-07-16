@@ -1,6 +1,6 @@
 #include "GUI.h"
-#include "user_ili9341_lcd.h"
-#include "user_xpt2046.h"
+#include "ili9341_lcd.h"
+#include "xpt2046.h"
 #include "GUIDRV_Template.h"
 #include "GUIDRV_FlexColor.h"
 

@@ -57,7 +57,7 @@ Purpose     : Template driver, could be used as starting point for new
 #include "LCD_Private.h"
 #include "GUI_Private.h"
 #include "LCD_ConfDefaults.h"
-#include "user_ili9341_lcd.h"
+#include "ili9341_lcd.h"
 /*********************************************************************
 *
 *       Defines
@@ -447,7 +447,7 @@ static void _DrawBitLine16BPP(GUI_DEVICE * pDevice, int x, int y, U16 const GUI_
 	for (;xsize > 0; xsize--, x++, p++) 
 	{
 		pixel = *p;
-        LCD_ILI9341_Parameter(pixel);		//写数据;
+        LCD_ILI9341_Parameter((uint16_t)pixel);		//写数据;
     }
 }
 

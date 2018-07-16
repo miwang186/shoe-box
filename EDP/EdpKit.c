@@ -534,6 +534,83 @@ EdpPacket* PacketPushdata(const char* dst_devid, const char* data, uint32 data_l
     WriteBytes(pkg, data, data_len);
     return pkg;
 }
+
+EdpPacket* PacketSaveJson(const char* dst_devid, char* json_obj, SaveDataType type)
+{
+    EdpPacket* pkg = NewBuffer();
+    uint32 remainlen;
+    //char* json_out = cJSON_Print(json_obj);
+    uint32 json_len = strlen(json_obj);
+
+    /* msg type */
+    WriteByte(pkg, SAVEDATA);
+    if(dst_devid)
+    {
+        /* remain len */
+        remainlen = 1+(2+strlen(dst_devid))+1+(2+json_len);
+        WriteRemainlen(pkg, remainlen);
+        /* translate address flag */
+        WriteByte(pkg, 0x80);
+        /* dst devid */
+        WriteStr(pkg, dst_devid);
+    }
+    else
+    {
+        /* remain len */
+        remainlen = 1+1+(2+json_len);
+        WriteRemainlen(pkg, remainlen);
+        /* translate address flag */
+        WriteByte(pkg, 0x00);
+    }
+    /* json flag */
+    WriteByte(pkg, type);
+    /* json */
+    WriteStr(pkg, json_obj);
+    //free(json_out);
+    return pkg;
+}
+
+EdpPacket* PacketSaveBin(const char* dst_devid, char* desc_obj, unsigned int bin_len)
+{
+    EdpPacket* pkg = NewBuffer();
+    unsigned int remainlen = 0;
+    unsigned int desc_len = 0;
+
+    /* check arguments */
+    //desc_out = cJSON_Print(desc_obj);
+    desc_len = strlen(desc_obj);
+
+	/* msg type */
+	WriteByte(pkg, SAVEDATA);
+    if(dst_devid)
+    {
+        /* remain len */
+        remainlen = 1+(2+strlen(dst_devid))+1+(2+desc_len)+(4+bin_len);
+        WriteRemainlen(pkg, remainlen);
+        /* translate address flag */
+        WriteByte(pkg, 0x80);
+        /* dst devid */
+        WriteStr(pkg, dst_devid);
+    }
+    else
+    {
+        /* remain len */
+        remainlen = 1+1+(2+desc_len)+(4+bin_len);
+        WriteRemainlen(pkg, remainlen);
+        /* translate address flag */
+        WriteByte(pkg, 0x00);
+    }
+    /* bin flag */
+    WriteByte(pkg, 0x02);
+    /* desc */ 
+    WriteStr(pkg, desc_obj);
+    //free(desc_out);
+    /* bin data */
+    WriteUint32(pkg, bin_len);
+    //WriteBytes(pkg, bin_data, bin_len); //内存不足，先发包头，再单独发送图片数据
+    return pkg;
+}
+
 /* sava_data (C->S) */
 EdpPacket* PacketSavedataJson(const char* dst_devid, cJSON* json_obj, int type)
 {

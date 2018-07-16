@@ -31,8 +31,8 @@ Purpose     : Config / System dependent externals for GUI
 ---------------------------END-OF-HEADER------------------------------
 */
 #include "GUI.h"
-#include "user_ili9341_lcd.h"
-#include "user_xpt2046.h"
+#include "ili9341_lcd.h"
+#include "xpt2046.h"
 #include "usart1.h"
 
 

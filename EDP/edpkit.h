@@ -736,6 +736,10 @@ EDPKIT_DLL EdpPacket* PacketPing(void);
  */
 EDPKIT_DLL int32 UnpackPingResp(EdpPacket* pkg);
 
+EdpPacket* PacketSaveJson(const char* dst_devid, char* json_obj, SaveDataType type);
+
+EdpPacket* PacketSaveBin(const char* dst_devid, char* desc_obj, unsigned int bin_len);
+
 #ifdef __cplusplus
 }
 #endif
