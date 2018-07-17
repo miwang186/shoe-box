@@ -460,7 +460,7 @@ unsigned char *NET_DEVICE_GetIPD(unsigned short timeOut)
 			ptrIPD = strstr((char *)netIOInfo.buf, "IPD,");				//搜索“IPD”头
 			if(ptrIPD == NULL)											//如果没找到，可能是IPD头的延迟，还是需要等待一会，但不会超过设定的时间
 			{
-				UsartPrintf(USART_DEBUG, "\"IPD\" not found\r\n");
+//				UsartPrintf(USART_DEBUG, "\"IPD\" not found\r\n");
 			}
 			else
 			{

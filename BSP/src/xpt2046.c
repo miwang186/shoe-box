@@ -189,8 +189,14 @@ static unsigned short XPT2046_ReadCMD(void)
  ******************************************************************************/
 uint16_t XPT2046_ReadAdc(uint8_t _ucCh)
 {
-  XPT2046_WriteCMD(_ucCh);
-	return 	XPT2046_ReadCMD();
+	uint16_t adc_value;
+	rt_enter_critical();
+	
+	XPT2046_WriteCMD(_ucCh);
+	adc_value = XPT2046_ReadCMD();
+	
+	rt_exit_critical();	
+	return adc_value;
 }
 
 

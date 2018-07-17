@@ -135,12 +135,13 @@ void NET_IO_Send(unsigned char *str, unsigned short len)
 {
 
 	unsigned short count = 0;
-	
+	rt_enter_critical();
 	for(; count < len; count++)											//发送一帧数据
 	{
 		USART_SendData(NET_IO, *str++);
 		while(USART_GetFlagStatus(NET_IO, USART_FLAG_TC) == RESET);
 	}
+	rt_exit_critical();
 
 }
 
@@ -217,7 +218,9 @@ void USART3_IRQHandler(void)
 
 	if(USART_GetITStatus(NET_IO, USART_IT_RXNE) != RESET) //接收中断
 	{
-		if(netIOInfo.dataLen >= sizeof(netIOInfo.buf))	netIOInfo.dataLen = 0; //防止串口被刷爆
+		if(netIOInfo.dataLen >= sizeof(netIOInfo.buf))	
+			netIOInfo.dataLen = 0; //防止串口被刷爆
+		
 		netIOInfo.buf[netIOInfo.dataLen++] = NET_IO->DR;
 		
 		USART_ClearFlag(NET_IO, USART_FLAG_RXNE);

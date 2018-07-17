@@ -91,7 +91,8 @@ uint8_t Read_DHT11(DHT11_Data_TypeDef *DHT11_Data)
 	
 	DHT11_DATA_OUT(LOW);   //主机拉低
 	sw_delay_ms(18);       //延时18ms
-
+	
+	rt_enter_critical();
 	DHT11_DATA_OUT(HIGH);  //总线拉高 主机延时30us
 	sw_delay_us(30);   	   //延时30us
 
@@ -99,7 +100,6 @@ uint8_t Read_DHT11(DHT11_Data_TypeDef *DHT11_Data)
    
 	if(DHT11_DATA_IN()== Bit_RESET)  //判断从机是否有低电平响应信号 如不响应则跳出，响应则向下运行   
 	{  
-		rt_enter_critical();
 		while(DHT11_DATA_IN() == Bit_RESET)  //轮询直到从机发出 的80us 低电平 响应信号结束
 		{
 			if(timeout == 0)
@@ -141,7 +141,8 @@ uint8_t Read_DHT11(DHT11_Data_TypeDef *DHT11_Data)
 			return ERROR;
 	}
 	else
-	{		
+	{
+		rt_exit_critical();	
 		return ERROR;
 	}   
 }

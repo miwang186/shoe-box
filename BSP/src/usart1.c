@@ -8,8 +8,6 @@
 
 ALTER_INFO alterInfo;
 
-
-
 /**
   * @brief  USART1初始化函数
 **/
@@ -78,13 +76,13 @@ void Usart_SendString(USART_TypeDef *USARTx, unsigned char *str, unsigned short 
 {
 
 	unsigned short count = 0;
-	
+	rt_enter_critical();	
 	for(; count < len; count++)
 	{
 		USART_SendData(USARTx, *str++);									//发送数据
 		while(USART_GetFlagStatus(USARTx, USART_FLAG_TC) == RESET);		//等待发送完成
 	}
-
+	rt_exit_critical();
 }
 
 /*
@@ -110,12 +108,13 @@ void UsartPrintf(USART_TypeDef *USARTx, char *fmt,...)
 	va_start(ap, fmt);
 	len = vsprintf((char *)UsartPrintfBuf, fmt, ap);							//格式化
 	va_end(ap);
-	
+	rt_enter_critical();
 	while(len--)
 	{
 		USART_SendData(USARTx, *pStr++);
 		while(USART_GetFlagStatus(USARTx, USART_FLAG_TC) == RESET);
 	}
+	rt_exit_critical();
 }
 
 

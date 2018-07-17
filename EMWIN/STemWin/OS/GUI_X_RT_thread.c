@@ -55,19 +55,20 @@ Purpose     : This file provides emWin Interface with FreeRTOS
 
 #include "GUI.h"
     
-    /* FreeRTOS include files */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "timers.h"
-#include "semphr.h"
-    
+/* FreeRTOS include files */
+#include <rtthread.h>
+#include "delay.h"    
 /*********************************************************************
 *
 * Global data
 */
-    static xSemaphoreHandle xQueueMutex;
-static xSemaphoreHandle xSemaTxDone;
+static struct 	rt_semaphore  	DispSem;  	//显示的信号量
+static struct 	rt_semaphore	EventSem;  
 
+
+static struct 	rt_semaphore	KeySem;  	//按键信号量
+static int		KeyPressed;
+static char		KeyIsInited;
 /*********************************************************************
 *
 * Timing:
@@ -81,27 +82,22 @@ and delay function. Default time unit (tick), normally is
 
 int GUI_X_GetTime(void)
 {
-  return ((int) xTaskGetTickCount());
+  return ((int) rt_tick_get() * 5);
 }
 
 void GUI_X_Delay(int ms)
 {
-  vTaskDelay( ms );
+	rt_uint8_t delay_ms;
+//	rt_uint32_t ticks;
+//    ticks = (ms * 1000) / RT_TICK_PER_SECOND;
+//	rt_thread_delay(ticks);
+	if(ms >= 5)
+	{
+		rt_thread_delay(ms/5);	
+	}
+	delay_ms = ms%5;
+	sw_delay_ms(delay_ms);
 }
-
-/*********************************************************************
-*
-* GUI_X_Init()
-*
-* Note:
-* GUI_X_Init() is called from GUI_Init is a possibility to init
-* some hardware which needs to be up and running before the GUI.
-* If not required, leave this routine blank.
-*/
-
-void GUI_X_Init(void) {
-}
-
 
 /*********************************************************************
 *
@@ -111,7 +107,10 @@ void GUI_X_Init(void) {
 * Called if WM is in idle state
 */
 
-void GUI_X_ExecIdle(void) {}
+void GUI_X_ExecIdle(void) 
+{
+    GUI_X_Delay(10);
+}
 
 /*********************************************************************
 *
@@ -134,45 +133,50 @@ void GUI_X_ExecIdle(void) {}
 /* Init OS */
 void GUI_X_InitOS(void)
 { 
-  /* Create Mutex lock */
-  xQueueMutex = xSemaphoreCreateMutex();
-  configASSERT (xQueueMutex != NULL);
-  
-  /* Queue Semaphore */ 
-  vSemaphoreCreateBinary( xSemaTxDone );
-  configASSERT ( xSemaTxDone != NULL );
+	if(rt_sem_init(&DispSem, "Disp_SEM", 1, RT_IPC_FLAG_FIFO) != RT_EOK)
+	{
+		rt_kprintf("DispSem init faill \r\n");
+	}
+	if(rt_sem_init(&EventSem, "Event_SEM", 0, RT_IPC_FLAG_FIFO) != RT_EOK)
+	{
+		rt_kprintf("EventSem init faill \r\n");		
+	}
 }
 
-void GUI_X_Unlock(void)
-{ 
-  xSemaphoreGive( xQueueMutex ); 
-}
-
+//等待信号量
 void GUI_X_Lock(void)
 {
-  if(xQueueMutex == NULL)
-  {
-    GUI_X_InitOS();
-  }
-  
-  xSemaphoreTake( xQueueMutex, portMAX_DELAY );
+	if(rt_sem_take(&DispSem, RT_WAITING_FOREVER) != RT_EOK) /*阻塞 获取信号量*/
+	{
+		rt_kprintf("DispSem take timeout! \r\n");				
+	}
 }
 
-/* Get Task handle */
-U32 GUI_X_GetTaskId(void) 
-{ 
-  return ((U32) xTaskGetCurrentTaskHandle());
+//发送信号量
+void GUI_X_Unlock(void)
+{
+	if(rt_sem_release(&DispSem) != RT_EOK)				//发送信号量
+	{
+		rt_kprintf("DispSem release faill! \r\n");						
+	}
+}
+extern struct rt_thread *rt_current_thread;
+//放回任务ID，此处返回的是任务优先级，由于UCOSIII支持时间片
+//轮转调度，因此如果使用了时间片轮转调度功能的话有可能会出错！
+U32 GUI_X_GetTaskId(void)
+{
+	return rt_current_thread->current_priority;
 }
 
 void GUI_X_WaitEvent (void) 
 {
-  while( xSemaphoreTake(xSemaTxDone, portMAX_DELAY ) != pdTRUE );
+	rt_sem_take(&EventSem, RT_WAITING_FOREVER);
 }
 
 
 void GUI_X_SignalEvent (void) 
 {
-  xSemaphoreGive( xSemaTxDone );
+	rt_sem_release(&EventSem);			//发送信号量
 }
 
 /*********************************************************************
@@ -189,8 +193,60 @@ functions automatically)
 
 */
 
-void GUI_X_Log (const char *s) { }
-void GUI_X_Warn (const char *s) { }
-void GUI_X_ErrorOut(const char *s) { }
+void  CheckInit (void) 
+{
+	if (KeyIsInited == 0u) {
+		KeyIsInited = 1u;
+		GUI_X_Init();
+	}
+}
+/*********************************************************************
+*
+* GUI_X_Init()
+*
+* Note:
+* GUI_X_Init() is called from GUI_Init is a possibility to init
+* some hardware which needs to be up and running before the GUI.
+* If not required, leave this routine blank.
+*/
+void GUI_X_Init (void) 
+{
+	rt_sem_init(&KeySem, "Key_SEM", 0, RT_IPC_FLAG_FIFO);	
+}
+
+int  GUI_X_GetKey (void) 
+{
+	int r;
+
+	r = KeyPressed;
+	CheckInit();
+	KeyPressed = 0;
+	return (r);
+}
+
+int  GUI_X_WaitKey (void) 
+{
+	int    r;
+
+	CheckInit();
+	if (KeyPressed == 0) 
+	{   
+		rt_sem_take(&KeySem, 0);
+	}
+	r = KeyPressed;
+	KeyPressed = 0;
+	return (r);		   
+}
+
+void  GUI_X_StoreKey (int k) 
+{
+	KeyPressed = k;
+	rt_sem_release(&KeySem);
+}
+
+void GUI_X_Log     (const char *s) { GUI_USE_PARA(s); }
+void GUI_X_Warn    (const char *s) { GUI_USE_PARA(s); }
+void GUI_X_ErrorOut(const char *s) { GUI_USE_PARA(s); }
+
 
 /*************************** End of file ****************************/

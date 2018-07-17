@@ -7,6 +7,7 @@
 #include "gy_906.h"
 #include "led.h"
 #include "buzzer.h"
+#include "relay.h"
 
 #include "info.h"
 #include "selfcheck.h"

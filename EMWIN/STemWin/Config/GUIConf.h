@@ -3,7 +3,8 @@
 
 #define GUI_NUM_LAYERS            10   // 显示的最大层数
 
-#define GUI_OS                    (0)  // 使用操作系统
+#define GUI_OS                    (1)  // 使用操作系统
+#define GUI_MAXTASK				  (5)  // 最大可调用EMWIN任务数
 #define GUI_SUPPORT_TOUCH         (1)  // 支持触摸
 
 #define GUI_DEFAULT_FONT          &GUI_Font6x8	//默认字体

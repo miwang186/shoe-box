@@ -27,9 +27,28 @@ void LED_Init(void)
 	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_8;	
 	//配置IO
 	GPIO_Init(GPIOA, &GPIO_InitStructure);	
+	
+	LED_1_OFF();
+	LED_2_OFF();
+	LED_3_OFF();
+	LED_4_OFF();
 }
 
-
+uint8_t Read_LED_Status(uint8_t led_index)
+{
+	switch(led_index)
+	{
+		case 1:
+			return !GPIO_ReadOutputDataBit(GPIOG,GPIO_Pin_6);
+		case 2:
+			return !GPIO_ReadOutputDataBit(GPIOA,GPIO_Pin_8);
+		case 3:
+			return !GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_8);
+		case 4:
+			return !GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_9);
+	}
+	return 0;
+}
 
 
 

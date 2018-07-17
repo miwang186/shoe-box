@@ -12,7 +12,7 @@
 #define RT_THREAD_PRIORITY_MAX	32
 
 /* Tick per Second */
-#define RT_TICK_PER_SECOND	100
+#define RT_TICK_PER_SECOND	200
 
 /* SECTION: RT_DEBUG */
 /* Thread Debug */
@@ -61,7 +61,7 @@
 
 /* SECTION: Device System */
 /* Using Device System */
-#define RT_USING_DEVICE
+//#define RT_USING_DEVICE
 // <bool name="RT_USING_DEVICE_IPC" description="Using device communication" default="true" />
 #define RT_USING_DEVICE_IPC
 // <bool name="RT_USING_SERIAL" description="Using Serial" default="true" />

@@ -1,5 +1,5 @@
-#ifndef __LCD_H
-#define __LCD_H		
+#ifndef __LCD_H_
+#define __LCD_H_		
 
 #include "stm32f10x.h"
 

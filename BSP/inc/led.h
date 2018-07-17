@@ -12,5 +12,14 @@
 #define  LED_4_ON()     GPIO_ResetBits(GPIOB,GPIO_Pin_9)
 
 
+typedef struct
+{
+	_Bool Led1Sta;
+	_Bool Led2Sta;
+	_Bool Led3Sta;
+	_Bool Led4Sta;
+
+} LED_STATUS;
 void LED_Init(void);
+uint8_t Read_LED_Status(uint8_t led_index);
 #endif

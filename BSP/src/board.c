@@ -28,15 +28,15 @@
  */
  
   //硬件驱动
- #include "hw_includes.h"
+#include "hw_includes.h"
  
  //协议
- #include "onenet.h"
+#include "onenet.h"
  
   //网络设备
- #include "net_device.h"
+#include "net_device.h"
  
-
+#include "GUI.h"
 /*@{*/
 
 /*******************************************************************************
@@ -69,25 +69,33 @@ void rt_hw_board_init(void)
 {
 	NVIC_Configuration();												//中断控制器分组设置
 
-
-	
 	LCD_GPIO_Init();													//初始化TFTLCD2.8寸屏
 	
+	LCD_Init();
+
 	DHT11_GPIO_Config(); 												//DH11 温湿度
 	
 	SMBus_Init();														/*GY 906 红外测温*/
 	
 	LED_Init();    														//LED指示灯初始化函数
 	
-	xpt2046_Init();			//初始化xpt2046用IO口（模拟SPI、中断IO）	
+	xpt2046_Init();														//初始化xpt2046用IO口（模拟SPI、中断IO）	
 
 	Buzzer_Init();														//蜂鸣器初始化
+	
+	Relay_Init();														//初始化继电器
 	
 //	IIC_Init();															//软件IIC总线初始化
 	
 	Check_PowerOn(); 													//上电自检
 	
 	USART1_Init(115200); 												//USART1串口初始化函数	
+	
+//	TIME2_5PWM_Init(TIM3,9999,143);//频率为：72*10^6/(9999+1)/(143+1)=50Hz
+//	TIM_SetCompare2(TIM3,4999);//得到占空比为50%的pwm波形
+	TIME2_5PWM_Init(TIM3,99,35);//频率为：72*10^6/(99+1)/(35+1)=20KHz
+	TIM_SetCompare2(TIM3,10);//得到占空比为10%的pwm波形
+	
 //	//先读出ssid、pswd、devid、apikey
 //	if(!Info_Check())														//如果EEPROM里有信息
 //	{
@@ -97,7 +105,7 @@ void rt_hw_board_init(void)
 //	}
 //	else //没有数据
 //	{
-		UsartPrintf(USART_DEBUG, "1.ssid_pswd in ROM\r\n");
+		UsartPrintf(USART_DEBUG, " 1.ssid_pswd in ROM\r\n");
 //	}
 	
 	UsartPrintf(USART_DEBUG, "2.SSID: %s,   PSWD: %s\r\n""DEVID: %s,     APIKEY: %s\r\n"
@@ -109,6 +117,7 @@ void rt_hw_board_init(void)
 	UsartPrintf(USART_DEBUG, "3.Hardware init OK\r\n");		//提示初始化完成
 	mem_init(); 											//初始化内部内存池	
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC,ENABLE);		//使能CRC时钟，否则STemWin不能使用 	
+	LCD_Clear(0, 0, 320, 240, BLACK);
 }
 
 /*@}*/

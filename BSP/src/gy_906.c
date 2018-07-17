@@ -236,9 +236,10 @@ uint16_t SMBus_ReadMemory(uint8_t slaveAddress, uint8_t command)
     uint8_t PecReg;			// Calculated PEC byte storage
     uint8_t ErrorCounter;	// Defines the number of the attempts for communication with MLX90614
 
-    ErrorCounter=0x00;				// Initialising of ErrorCounter
+    ErrorCounter = 5;				// Initialising of ErrorCounter
 	slaveAddress <<= 1;	//2-7位表示从机地址
 	
+	rt_enter_critical();
     do
     {
 repeat:
@@ -246,7 +247,8 @@ repeat:
         --ErrorCounter;				    //Pre-decrement ErrorCounter
         if(!ErrorCounter) 			    //ErrorCounter=0?
         {
-            break;					    //Yes,go out from do-while{}
+			rt_exit_critical();
+            return 0;					    //Yes,go out from do-while{}
         }
 
         SMBus_StartBit();				//Start condition
@@ -279,7 +281,8 @@ repeat:
         PecReg=PEC_Calculation(arr);//Calculate CRC
     }
     while(PecReg != Pec);		//If received and calculated CRC are equal go out from do-while{}
-
+	rt_exit_critical();
+	
 	data = (DataH<<8) | DataL;	//data=DataH:DataL
     return data;
 }

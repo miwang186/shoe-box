@@ -75,10 +75,10 @@ int main(void)
 	RCC_AHBPeriphClockCmd(RCC_AHBPeriph_CRC,ENABLE);//使能CRC时钟，否则STemWin不能使用 
 	
 	//	while(Touch_Calibrate() !=0);
-// 	WM_SetCreateFlags(WM_CF_MEMDEV);
-//	GUI_Init();
-////	Touch_MainTask();
-//	MainTask();
+ 	WM_SetCreateFlags(WM_CF_MEMDEV);
+	GUI_Init();
+//	Touch_MainTask();
+	MainTask();
 
 //主循环	
 	while(1)	

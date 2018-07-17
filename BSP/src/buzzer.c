@@ -17,3 +17,7 @@ void Buzzer_Init(void)
 	GPIO_ResetBits(GPIOG,GPIO_Pin_7);		
 }
 
+uint8_t Read_Buzzer_Status()
+{
+	return !GPIO_ReadOutputDataBit(GPIOG,GPIO_Pin_7);
+}

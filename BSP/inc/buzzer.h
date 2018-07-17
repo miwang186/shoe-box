@@ -5,6 +5,7 @@
 #define  BUZZER_ON()    GPIO_SetBits(GPIOG,GPIO_Pin_7)
 #define  BUZZER_OFF()   GPIO_ResetBits(GPIOG,GPIO_Pin_7)
 void Buzzer_Init(void);
-
+uint8_t Read_Buzzer_Status(void);
 #endif 
+
 

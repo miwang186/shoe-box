@@ -1,5 +1,7 @@
-#include "stm32f10x.h"
+#ifndef _DHT11_H_
+#define _DHT11_H_
 
+#include "stm32f10x.h"
 
 #define HIGH  1
 #define LOW   0
@@ -31,3 +33,4 @@ void DHT11_GPIO_Config(void);
 uint8_t Read_DHT11(DHT11_Data_TypeDef *DHT11_Data);
 static uint8_t Read_Byte(void);
 
+#endif 

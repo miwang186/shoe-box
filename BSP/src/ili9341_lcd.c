@@ -298,10 +298,8 @@ void LCD_GPIO_Init(void)
 void LCD_Init()
 {
 	LCD_Rst();
-	rt_enter_critical();
 	LCD_REG_Config();
-	rt_exit_critical();
-	Lcd_GramScan(2);
+	Lcd_GramScan(2);	
 }
 /**************************************************************************************
  * 描  述 : 设置TFT屏GRAM的扫描方向 

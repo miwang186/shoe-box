@@ -41,6 +41,8 @@
 //图片数据文件
 //#include "image_2k.h"
 
+  //硬件驱动
+#include "hw_includes.h"
 //C库
 #include <string.h>
 #include <stdlib.h>
@@ -53,8 +55,8 @@ EdpPacket *send_pkg;	//协议包
 
 ONETNET_INFO oneNetInfo = {"35852269", "LwithCI7=NoIXIplbjRdDxe118g=", 0, 0, 0, 0};
 extern DATA_STREAM dataStream[];
-
-
+extern LED_STATUS ledStatus;
+extern DEVICE_STATUS deviceStatus;
 /*
 ************************************************************
 *	函数名称：	OneNet_DevLink
@@ -726,7 +728,7 @@ void OneNet_App(unsigned char *cmd)
 	else
 		OneNet_Replace(cmd, 4);
 	
-	dataPtr = strstr((const char *)cmd, "}");			//搜索'}'
+	dataPtr = strstr((const char *)cmd, ":");			//搜索'}'
 
 	if(dataPtr != NULL)									//如果找到了
 	{
@@ -739,74 +741,106 @@ void OneNet_App(unsigned char *cmd)
 		
 		num = atoi((const char *)numBuf);				//转为数值形式
 		
-		if(strstr((char *)cmd, "redled"))				//搜索"redled"
+		if(strstr((char *)cmd, "Rled_1"))					//搜索"redled"
 		{
 			if(num == 1)								//控制数据如果为1，代表开
 			{
-//				Led4_Set(LED_ON);
+				LED_1_ON();
+				ledStatus.Led1Sta = 1;
 			}
 			else if(num == 0)							//控制数据如果为0，代表关
 			{
-//				Led4_Set(LED_OFF);
+				LED_1_OFF();
+				ledStatus.Led1Sta = 0;				
 			}
 			
 			oneNetInfo.sendData = 1;					//标记数据反馈
 		}
 														//下同
-		else if(strstr((char *)cmd, "greenled"))
+		else if(strstr((char *)cmd, "Rled_2"))
 		{
 			if(num == 1)
 			{
-//				Led5_Set(LED_ON);
+				LED_2_ON();	
+				ledStatus.Led2Sta = 1;					
 			}
 			else if(num == 0)
 			{
-//				Led5_Set(LED_OFF);
+				LED_2_OFF();	
+				ledStatus.Led2Sta = 0;					
 			}
 			
 			oneNetInfo.sendData = 1;
 		}
-		else if(strstr((char *)cmd, "yellowled"))
+		else if(strstr((char *)cmd, "Rled_3"))
 		{
 			if(num == 1)
 			{
-//				Led6_Set(LED_ON);
+				LED_3_ON();	
+				ledStatus.Led3Sta = 1;					
 			}
 			else if(num == 0)
 			{
-//				Led6_Set(LED_OFF);
+				LED_3_OFF();
+				ledStatus.Led3Sta = 0;					
 			}
 			
 			oneNetInfo.sendData = 1;
 		}
-		else if(strstr((char *)cmd, "blueled"))
+		else if(strstr((char *)cmd, "Rled_4"))
 		{
 			if(num == 1)
 			{
-//				Led7_Set(LED_ON);
+				LED_4_ON();				
+				ledStatus.Led4Sta = 1;					
 			}
 			else if(num == 0)
 			{
-//				Led7_Set(LED_OFF);
+				LED_4_OFF();		
+				ledStatus.Led4Sta = 0;					
 			}
 			
 			oneNetInfo.sendData = 1;
 		}
-		else if(strstr((char *)cmd, "beep"))
+		else if(strstr((char *)cmd, "Rrelay_key"))
 		{
 			if(num == 1)
 			{
-//				Beep_Set(BEEP_ON);
+				RELAY1_ON();				
+				deviceStatus.relay_key = 1;					
 			}
 			else if(num == 0)
 			{
-//				Beep_Set(BEEP_OFF);
+				RELAY1_OFF();		
+				deviceStatus.relay_key = 0;						
+			}
+			oneNetInfo.sendData = 1;
+		}
+		else if(strstr((char *)cmd, "Rfanner_key"))
+		{
+			if(num == 1)
+			{
+				deviceStatus.motor_key = 1;
+				RELAY2_ON();					
+			}
+			else if(num == 0)
+			{
+				deviceStatus.motor_key = 0;
+				RELAY2_OFF();					
 			}
 			
 			oneNetInfo.sendData = 1;
 		}
+		else if(strstr((char *)cmd, "Rfanner_rate"))
+		{
+			if(num > 0 && num< 99)
+			{
+				deviceStatus.motor_rate = num;
+				SET_PWM_Arr(num);
+			}
+			oneNetInfo.sendData = 1;
+		}		
 	}
 	
 	NET_DEVICE_ClrData();								//清空缓存
-
 }
