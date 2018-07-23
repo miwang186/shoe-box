@@ -48,13 +48,13 @@
 
 /* SECTION: Memory Management */
 /* Using Memory Pool Management*/
-#define RT_USING_MEMPOOL
+//#define RT_USING_MEMPOOL
 
 /* Using Dynamic Heap Management */
-#define RT_USING_HEAP
+//#define RT_USING_HEAP
 
 /* Using Small MM */
-#define RT_USING_SMALL_MEM
+//#define RT_USING_SMALL_MEM
 
 // <bool name="RT_USING_COMPONENTS_INIT" description="Using RT-Thread components initialization" default="true" />
 //#define RT_USING_COMPONENTS_INIT //*=============================≤ª π”√

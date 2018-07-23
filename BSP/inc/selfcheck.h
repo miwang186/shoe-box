@@ -10,12 +10,10 @@
 typedef struct
 {
 
-	unsigned short SHT20_OK : 1;		//温湿度传感器正常标志位
-	unsigned short ADXL345_OK : 1;		//三轴传感器正常标志位
+	unsigned short DHT11_OK : 1;		//温湿度传感器正常标志位
 	unsigned short EEPROM_OK : 1;		//存储器正常标志位
-	unsigned short GY30_OK : 1;
-	unsigned short OLED_OK : 1;			//OLE正常标志位
-	
+	unsigned short GY906_OK : 1;		//
+	unsigned short LCD_OK : 1;			//LCD正常标志
 	unsigned short NET_DEVICE_OK : 1;	//网络设备正常标志位
 
 } CHECK_INFO;

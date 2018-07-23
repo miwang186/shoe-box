@@ -7,16 +7,10 @@
 #define LOW   0
 
 #define DHT11_CLK     	RCC_APB2Periph_GPIOB
-#define DHT11_PIN     	GPIO_Pin_6                  
+#define DHT11_PIN1     	GPIO_Pin_6                  
 #define DHT11_PORT		GPIOB 
 
-//带参宏，可以像内联函数一样使用,输出高电平或低电平
-#define DHT11_DATA_OUT(a)	if (a)	\
-					GPIO_SetBits(GPIOB,DHT11_PIN);\
-					else		\
-					GPIO_ResetBits(GPIOB,DHT11_PIN)
- //读取引脚的电平
-#define  DHT11_DATA_IN()	 GPIO_ReadInputDataBit(GPIOB,DHT11_PIN)
+#define DHT11_PIN2     	GPIO_Pin_7                  
 				
 typedef struct
 {
@@ -30,7 +24,6 @@ typedef struct
 
 
 void DHT11_GPIO_Config(void);
-uint8_t Read_DHT11(DHT11_Data_TypeDef *DHT11_Data);
-static uint8_t Read_Byte(void);
+uint8_t Read_DHT11(DHT11_Data_TypeDef *DHT11_Data,uint8_t index);
 
 #endif 

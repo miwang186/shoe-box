@@ -7,9 +7,9 @@
 //网络设备
 #include "net_device.h"
 
-#include "GUI.h"
-#include "GUIDemo.h"
+#include "main_dispaly.h"
 
+#define IWDG_TASK_PRIO		2	//看门狗任务
 #define TOUCH_TASK_PRIO		3	//触摸任务
 #define USART_TASK_PRIO		5	//串口任务
 #define HEART_TASK_PRIO		7	//心跳任务
@@ -19,16 +19,24 @@
 #define SEND_TASK_PRIO		15	//数据发送任务
 #define NET_TASK_PRIO		17	//网络初始化任务
 #define DISPLAY_TASK_PRIO	19	//显示任务
+#define ALTER_TASK_PRIO		20  //
 
+
+#define IWDG_TASK_STK_SIZE		256	//运行栈大小
+#define ALTER_TASK_STK_SIZE		1024
 #define TOUCH_TASK_STK_SIZE		1024 
-#define USART_TASK_STK_SIZE		2048 
-#define HEART_TASK_STK_SIZE		2048
-#define TIMER_TASK_STK_SIZE		1024
-#define FAULT_TASK_STK_SIZE		2048
+#define USART_TASK_STK_SIZE		1024 
+#define HEART_TASK_STK_SIZE		1024
+#define TIMER_TASK_STK_SIZE		512
+#define FAULT_TASK_STK_SIZE		1024
 #define SENSOR_TASK_STK_SIZE	1024
-#define SEND_TASK_STK_SIZE		3072
+#define SEND_TASK_STK_SIZE		2048
 #define DISPLAY_TASK_STK_SIZE	2048
-#define NET_TASK_STK_SIZE		2048
+#define NET_TASK_STK_SIZE		1024
+
+//看门狗任务
+ALIGN(RT_ALIGN_SIZE) unsigned char IWDG_TASK_STK[IWDG_TASK_STK_SIZE];
+struct rt_thread IWDG_Task_Handle;	//任务句柄
 
 //串口任务
 ALIGN(RT_ALIGN_SIZE) unsigned char TOUCH_TASK_STK[TOUCH_TASK_STK_SIZE]; //
@@ -66,11 +74,14 @@ struct rt_thread DISPLAY_Task_Handle;//任务句柄
 ALIGN(RT_ALIGN_SIZE) unsigned char NET_TASK_STK[NET_TASK_STK_SIZE]; //
 struct rt_thread NET_Task_Handle;	//任务句柄
 
+//信息更改任务
+ALIGN(RT_ALIGN_SIZE) unsigned char ALTER_TASK_STK[ALTER_TASK_STK_SIZE]; //
+struct rt_thread ALTER_Task_Handle;	//任务句柄
 
 DHT11_INFO 		dht11Info;	/*DTH11*/							
 GY_906_INFO 	gy906Info;	/*gy906*/	
 LED_STATUS 		ledStatus = {0,0,0,0};
-DEVICE_STATUS	deviceStatus = {10,1};
+DEVICE_STATUS	deviceStatus = {18000,10,1};
 //数据流
 DATA_STREAM dataStream[] ={
 								{"led1", &ledStatus.Led1Sta, TYPE_BOOL, 1},
@@ -81,8 +92,11 @@ DATA_STREAM dataStream[] ={
 								{"relay_key", &deviceStatus.relay_key, TYPE_BOOL, 1},								
 								{"fanner_rate", &deviceStatus.motor_rate, TYPE_USHORT, 1},
 																
-								{"dth11-1_temp", &dht11Info.tempreture, TYPE_FLOAT, 1},
-								{"dth11-1_humi", &dht11Info.humidity, TYPE_FLOAT, 1},
+								{"dth11-1_temp", &dht11Info.tempreture_1, TYPE_FLOAT, 1},
+								{"dth11-1_humi", &dht11Info.humidity_1, TYPE_FLOAT, 1},
+								{"dth11-2_temp", &dht11Info.tempreture_2, TYPE_FLOAT, 1},
+								{"dth11-2_humi", &dht11Info.humidity_2, TYPE_FLOAT, 1},
+								
 								{"gy-906_Ta", &gy906Info.temp_ta, TYPE_FLOAT, 1},
 								{"gy-906_To", &gy906Info.temp_to, TYPE_FLOAT, 1},			
 							};
@@ -93,6 +107,47 @@ unsigned char dataStreamLen = sizeof(dataStream) / sizeof(dataStream[0]);
 							
 #define NET_TIME	60			//设定时间--单位秒
 unsigned short timerCount = 0;	//时间计数--单位秒
+
+							
+//void prinf_task_stk_size()
+//{
+//	uint16_t size,i,j,index;
+//	for(j = 0; j < 11; j++)
+//	{
+//		size = sizeof(IWDG_TASK_STK);
+//		for(i = 0;i<size;i++)
+//		{
+//		
+//		}
+//	}
+//}	
+							
+/*
+************************************************************
+*	函数名称：	IWDG_Task
+*
+*	函数功能：	清除看门狗
+*
+*	入口参数：	void类型的参数指针
+*
+*	返回参数：	无
+*
+*	说明：		看门狗任务
+************************************************************
+*/
+void IWDG_Task(void *pdata)
+{
+
+	while(1)
+	{
+	
+		Iwdg_Feed(); 		//喂狗
+		
+		RTOS_TimeDly(50); 	//挂起任务250ms
+	
+	}
+
+}
 
 /*
 ************************************************************
@@ -202,6 +257,17 @@ void TIMER_Task(void *pdata)
 			timerCount = 0;													//清除计数
 		}
 		
+		if(deviceStatus.timing_sec != 0)
+		{
+			deviceStatus.timing_sec--;
+		}
+		else 
+		{
+			RELAY1_KEY = 0;
+			RELAY2_KEY = 0;
+			SET_PWM_Arr(1);
+		}
+		
 		RTOS_TimeDly(200);													//挂起任务1s
 	
 	}
@@ -266,7 +332,7 @@ void SEND_Task(void *parameter)
 		}
 		send_time++;
 		
-		if(send_time >= 150)  //15s一次
+		if(send_time >= 250)  //25s一次
 		{
 			send_time = 0;
 			OneNet_SendData(kTypeSimpleJsonWithoutTime, dataStreamLen);	//上传数据到平台
@@ -335,6 +401,53 @@ void HEART_Task(void *pdata)
 	}
 
 }
+
+
+/*
+************************************************************
+*	函数名称：	ALTER_Task
+*
+*	函数功能：	通过串口更改SSID、PSWD、DEVID、APIKEY
+*
+*	入口参数：	void类型的参数指针
+*
+*	返回参数：	无
+*
+*	说明：		更改后会保存到EEPROM里
+************************************************************
+*/
+void ALTER_Task(void *pdata)
+{
+    
+    unsigned char usart1Count = 0;
+
+    while(1)
+    {
+    
+        rt_memset(alterInfo.alterBuf, 0, sizeof(alterInfo.alterBuf));
+		alterInfo.alterCount = 0;
+		usart1Count = 0;
+        while((rt_strlen(alterInfo.alterBuf) != usart1Count) || (usart1Count == 0))	//等待接收完成
+        {
+            usart1Count = rt_strlen(alterInfo.alterBuf);							//计算长度
+            RTOS_TimeDly(20);														//每100ms检查一次
+        }
+        UsartPrintf(USART_DEBUG, "\r\nusart1Buf Len: %d, usart1Count = %d\r\n",
+									rt_strlen(alterInfo.alterBuf), usart1Count);
+        
+		if(checkInfo.EEPROM_OK == DEV_OK)											//如果EEPROM存在
+		{
+			if(Info_Alter(alterInfo.alterBuf))										//更改信息
+			{
+				oneNetInfo.netWork = 0;												//重连网络和平台
+				NET_DEVICE_ReConfig(0);
+			}
+		}
+    
+    }
+
+}
+
 /*
 ************************************************************
 *	函数名称：	TOUCH_Task
@@ -356,7 +469,48 @@ void TOUCH_Task(void *pdata)
 		rt_thread_delay(2);
 	}
 }
+void display_sensor_info()
+{
+	GUI_SetColor(GUI_WHITE);
+	GUI_SetFont(&GUI_FontHZ24);
+	GUI_DispStringAt("皮皮鞋盒",112,6);
+	GUI_SetFont(&GUI_FontHZ16);
+	GUI_DispStringAt("温度1:",10,40+16);
+	GUI_DispFloat(dht11Info.tempreture_1,5);
+	GUI_DispString("'C");
+	GUI_DispString("        湿度1:");
+	GUI_DispDec(dht11Info.humidity_1,2);
+	GUI_DispString("%");
 
+	GUI_DispStringAt("温度2:",10,50+16*2);
+	GUI_DispFloat(dht11Info.tempreture_2,5);
+	GUI_DispString("'C");
+	GUI_DispString("        湿度2:");
+	GUI_DispDec(dht11Info.humidity_2,2);	
+	GUI_DispString("%");
+
+	GUI_DispStringAt("环境温度:",10,60 + 16*3);
+	GUI_DispFloat(gy906Info.temp_ta,5);
+	GUI_DispString("'C");
+
+	GUI_DispString("     物体温度:");
+	GUI_DispFloat(gy906Info.temp_to,5);	
+	GUI_DispString("'C");
+
+	GUI_DispStringAt("电机速度:",10,70+16*4);
+	GUI_DispDec(deviceStatus.motor_rate,2);
+	GUI_DispString("%");
+
+	GUI_DispString("        继电器:");
+	if(deviceStatus.relay_key)
+	{
+		GUI_DispString("开");
+	}
+	else
+	{
+		GUI_DispString("关");
+	}
+}
 /*
 ************************************************************
 *	函数名称：	DISPLAY_Task
@@ -372,11 +526,30 @@ void TOUCH_Task(void *pdata)
 */
 void DISPLAY_Task(void *pdata)
 {
- 	WM_SetCreateFlags(WM_CF_MEMDEV);
-	GUI_Init();		
+	GUI_Init();	
+//	GUI_CURSOR_Show();
+//	//更换皮肤
+	BUTTON_SetDefaultSkin(BUTTON_SKIN_FLEX); 
+	CHECKBOX_SetDefaultSkin(CHECKBOX_SKIN_FLEX);
+	DROPDOWN_SetDefaultSkin(DROPDOWN_SKIN_FLEX);
+	FRAMEWIN_SetDefaultSkin(FRAMEWIN_SKIN_FLEX);
+	HEADER_SetDefaultSkin(HEADER_SKIN_FLEX);
+	MENU_SetDefaultSkin(MENU_SKIN_FLEX);
+	MULTIPAGE_SetDefaultSkin(MULTIPAGE_SKIN_FLEX);
+	PROGBAR_SetDefaultSkin(PROGBAR_SKIN_FLEX);
+	RADIO_SetDefaultSkin(RADIO_SKIN_FLEX);
+	SCROLLBAR_SetDefaultSkin(SCROLLBAR_SKIN_FLEX);
+	SLIDER_SetDefaultSkin(SLIDER_SKIN_FLEX);
+	SPINBOX_SetDefaultSkin(SPINBOX_SKIN_FLEX);	
+	
+//	WM_SetDesktopColor(GUI_WHITE); /* Automacally update desktop window */
+	WM_SetCreateFlags(WM_CF_MEMDEV); /* Use memory devices on all windows to avoid flicker */	
+	Main_Display_Create();
+	
 	while(1)
 	{
-		GUIDEMO_Main(); 
+		GUI_Delay(500); 
+
 	}
 }
 /*
@@ -407,19 +580,19 @@ void SENSOR_Task(void *pdata) //
 		ledStatus.Led3Sta = Read_LED_Status(3);
 		ledStatus.Led4Sta = Read_LED_Status(4);
 		
-		Read_DHT11(&DHT11_Data);
+		if(Read_DHT11(&DHT11_Data,1))
+		{
+			dht11Info.humidity_1 = DHT11_Data.humi_int + DHT11_Data.humi_deci/100.0;
+			dht11Info.tempreture_1 = DHT11_Data.temp_int + DHT11_Data.temp_deci/100.0;	
+		}
 		
-		dht11Info.humidity = DHT11_Data.humi_int + DHT11_Data.humi_deci/100.0;
-		dht11Info.tempreture = DHT11_Data.temp_int + DHT11_Data.temp_deci/100.0;	
-				
+		if(Read_DHT11(&DHT11_Data,2))
+		{
+			dht11Info.humidity_2 = DHT11_Data.humi_int + DHT11_Data.humi_deci/100.0;
+			dht11Info.tempreture_2 = DHT11_Data.temp_int + DHT11_Data.temp_deci/100.0;	
+		}
 		gy906Info.temp_ta = SMBus_ReadTemp(RAM_TA);
 		gy906Info.temp_to = SMBus_ReadTemp(RAM_TOBJ1);
-
-		LCD_DispStr(32,32,WHITE,"Temp:%d.%d'C Humi:%d.%d%%", DHT11_Data.temp_int,DHT11_Data.temp_deci, \
-					DHT11_Data.humi_int,DHT11_Data.humi_deci);
-					
-		LCD_DispStr(32,44,WHITE,"Temp_TA:%0.2f", gy906Info.temp_ta);
-		LCD_DispStr(32,56,WHITE,"Temp_To1:%0.2f",gy906Info.temp_to);
 		
 		RTOS_TimeDly(200); 										//挂起任务1000ms	
 	}
@@ -427,7 +600,11 @@ void SENSOR_Task(void *pdata) //
 }
 
 int rt_application_init(void)
-{	
+{
+	if(rt_thread_init(&IWDG_Task_Handle, "IWDG", IWDG_Task, RT_NULL,
+						(unsigned char *)&IWDG_TASK_STK[0], IWDG_TASK_STK_SIZE, IWDG_TASK_PRIO, 1) == RT_EOK)
+		rt_thread_startup(&IWDG_Task_Handle);
+						
 	if(rt_thread_init(&NET_Task_Handle, "NET", NET_Task, RT_NULL,
 						(unsigned char *)&NET_TASK_STK[0], NET_TASK_STK_SIZE, NET_TASK_PRIO, 1) == RT_EOK)
 		rt_thread_startup(&NET_Task_Handle);
@@ -452,9 +629,9 @@ int rt_application_init(void)
 						(unsigned char *)&SEND_TASK_STK[0], SEND_TASK_STK_SIZE, SEND_TASK_PRIO, 1) == RT_EOK)
 		rt_thread_startup(&SEND_Task_Handle);
 
-//	if(rt_thread_init(&SEND_Task_Handle, "DISPLAY", DISPLAY_Task, RT_NULL,
-//						(unsigned char *)&DISPLAY_TASK_STK[0], DISPLAY_TASK_STK_SIZE, DISPLAY_TASK_PRIO, 1) == RT_EOK)
-//		rt_thread_startup(&SEND_Task_Handle);
+	if(rt_thread_init(&DISPLAY_Task_Handle, "DISPLAY", DISPLAY_Task, RT_NULL,
+						(unsigned char *)&DISPLAY_TASK_STK[0], DISPLAY_TASK_STK_SIZE, DISPLAY_TASK_PRIO, 1) == RT_EOK)
+		rt_thread_startup(&DISPLAY_Task_Handle);
 						
 	if(rt_thread_init(&USART_Task_Handle, "USART", USART_Task, RT_NULL,
 						(unsigned char *)&USART_TASK_STK[0], USART_TASK_STK_SIZE, USART_TASK_PRIO, 1) == RT_EOK)
@@ -462,7 +639,11 @@ int rt_application_init(void)
 
 	if(rt_thread_init(&TOUCH_Task_Handle, "TOUCH", TOUCH_Task, RT_NULL,
 						(unsigned char *)&TOUCH_TASK_STK[0], TOUCH_TASK_STK_SIZE, TOUCH_TASK_PRIO, 1) == RT_EOK)
-		rt_thread_startup(&TOUCH_Task_Handle);							
+		rt_thread_startup(&TOUCH_Task_Handle);	
+
+	if(rt_thread_init(&ALTER_Task_Handle, "ALTER", ALTER_Task, RT_NULL,
+						(unsigned char *)&ALTER_TASK_STK[0], ALTER_TASK_STK_SIZE, ALTER_TASK_PRIO, 1) == RT_EOK)
+		rt_thread_startup(&ALTER_Task_Handle);						
 	return 0;
 }
 

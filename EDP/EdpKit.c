@@ -4,7 +4,7 @@
 //#include <assert.h>
 #include <time.h>
 #include "EdpKit.h"
-
+#include "malloc.h"
 void assert(int ecp)
 { 
 	 ;
@@ -176,7 +176,7 @@ void assert(int ecp)
     return ERR_UNPACK_SAVED_JSON;                   \
                                     \
     id = cJSON_GetObjectItem(ds_item, "id")->valuestring;       \
-    *ds_id = (char*)malloc(strlen(id)+1);               \
+    *ds_id = (char*)mymalloc(strlen(id)+1);               \
     memcpy((char*)(*ds_id), id, strlen(id)+1);              \
                                         \
     dp_array = cJSON_GetObjectItem(ds_item, "datapoints");      \
@@ -188,7 +188,7 @@ void assert(int ecp)
 
 #define UNPACK_SAVE_DATA_TYPE1_END_STRING               \
     valuestring = cJSON_GetObjectItem(dp_item, "value")->valuestring;   \
-    *value = (char*)malloc(strlen(valuestring)+1);          \
+    *value = (char*)mymalloc(strlen(valuestring)+1);          \
     memcpy((char*)(*value), valuestring, strlen(valuestring)+1);    \
     cJSON_Delete(json_obj);                     \
     return 0;                               \
@@ -217,7 +217,7 @@ void assert(int ecp)
     }                               \
     json_child = json_obj->child;                   \
     len = strlen(json_child->string) + 1;               \
-    *ds_id = (char*)malloc(len);                    \
+    *ds_id = (char*)mymalloc(len);                    \
     memcpy((char*)(*ds_id), json_child->string, len);       \
 
 #define UNPACK_SAVE_DATA_TYPE23_END_NUMBER(TYPE)            \
@@ -228,7 +228,7 @@ void assert(int ecp)
 
 #define UNPACK_SAVE_DATA_TYPE23_END_STRING()                \
     valuestring = json_child->valuestring;              \
-    *value = (char*)malloc(strlen(valuestring)+1);          \
+    *value = (char*)mymalloc(strlen(valuestring)+1);          \
     memcpy((char*)(*value), valuestring, strlen(valuestring)+1);    \
     cJSON_Delete(json_obj);                     \
     return 0;                               \
@@ -253,7 +253,7 @@ void assert(int ecp)
     }                               \
                                     \
     len = strlen(json_child->string) + 1;               \
-    *ds_id = (char*)malloc(len);                    \
+    *ds_id = (char*)mymalloc(len);                    \
     memcpy(*ds_id, json_child->string, len);            \
                                     \
     json_child = json_child->child;                 \
@@ -280,8 +280,8 @@ static void FormatAt(char* buffer, int len, time_t now)
 /*---------------------------------------------------------------------------*/
 Buffer* NewBuffer()
 {
-    Buffer* buf = (Buffer*)malloc(sizeof(Buffer));
-    buf->_data = (uint8*)malloc(sizeof(uint8) * BUFFER_SIZE);
+    Buffer* buf = (Buffer*)mymalloc(sizeof(Buffer));
+    buf->_data = (uint8*)mymalloc(sizeof(uint8) * BUFFER_SIZE);
     buf->_write_pos = 0;
     buf->_read_pos = 0;
     buf->_capacity = BUFFER_SIZE;
@@ -290,8 +290,8 @@ Buffer* NewBuffer()
 void DeleteBuffer(Buffer** buf)
 {
     uint8* pdata = (*buf)->_data;
-    free(pdata);
-    free(*buf);
+    myfree(pdata);
+    myfree(*buf);
     *buf = 0;
 }
 int32 CheckCapacity(Buffer* buf, uint32 len)
@@ -310,9 +310,9 @@ int32 CheckCapacity(Buffer* buf, uint32 len)
         return -1;
     if (cap_len > buf->_capacity)
     {
-        pdata = (uint8*)malloc(sizeof(uint8) * cap_len);
+        pdata = (uint8*)mymalloc(sizeof(uint8) * cap_len);
         memcpy(pdata, buf->_data, buf->_write_pos);
-        free(buf->_data);
+        myfree(buf->_data);
         buf->_data = pdata;
         buf->_capacity = cap_len;
     }
@@ -331,7 +331,7 @@ int32 ReadBytes(EdpPacket* pkg, uint8** val, uint32 count)
 {
     if (pkg->_read_pos+count > pkg->_write_pos) 
         return -1;
-    *val = (uint8*)malloc(sizeof(uint8) * count);
+    *val = (uint8*)mymalloc(sizeof(uint8) * count);
     memcpy(*val, pkg->_data + pkg->_read_pos, count);
     pkg->_read_pos += count;
     return 0;
@@ -372,7 +372,7 @@ int32 ReadStr(EdpPacket* pkg, char** val)
     if (pkg->_read_pos+len > pkg->_write_pos) 
         return -1;
     /* copy str val */
-    *val = (char*)malloc(sizeof(char) * (len + 1));
+    *val = (char*)mymalloc(sizeof(char) * (len + 1));
     memset(*val, 0, len+1);
     strncpy(*val, (const char *)(pkg->_data + pkg->_read_pos), len);
     pkg->_read_pos += len;
@@ -566,7 +566,7 @@ EdpPacket* PacketSaveJson(const char* dst_devid, char* json_obj, SaveDataType ty
     WriteByte(pkg, type);
     /* json */
     WriteStr(pkg, json_obj);
-    //free(json_out);
+    //myfree(json_out);
     return pkg;
 }
 
@@ -604,7 +604,7 @@ EdpPacket* PacketSaveBin(const char* dst_devid, char* desc_obj, unsigned int bin
     WriteByte(pkg, 0x02);
     /* desc */ 
     WriteStr(pkg, desc_obj);
-    //free(desc_out);
+    //myfree(desc_out);
     /* bin data */
     WriteUint32(pkg, bin_len);
     //WriteBytes(pkg, bin_data, bin_len); //内存不足，先发包头，再单独发送图片数据
@@ -648,7 +648,7 @@ EdpPacket* PacketSavedataJson(const char* dst_devid, cJSON* json_obj, int type)
     WriteByte(pkg, type);
     /* json */ 
     WriteStr(pkg, json_out);
-    free(json_out);
+    myfree(json_out);
     return pkg;
 }
 
@@ -735,7 +735,7 @@ EdpPacket* PacketSavedataBin(const char* dst_devid,
             || cJSON_GetObjectItem(desc_obj, "ds_id") == 0)  
             /* desc_obj MUST has ds_id */
     {
-        free(desc_out);
+        myfree(desc_out);
         return 0;
     }
     pkg = NewBuffer();
@@ -763,7 +763,7 @@ EdpPacket* PacketSavedataBin(const char* dst_devid,
     WriteByte(pkg, 0x02);
     /* desc */ 
     WriteStr(pkg, desc_out);
-    free(desc_out);
+    myfree(desc_out);
     /* bin data */
     WriteUint32(pkg, bin_len);
     WriteBytes(pkg, bin_data, bin_len);
@@ -973,7 +973,7 @@ int32 UnpackSavedataJson(EdpPacket* pkg, cJSON** json_obj)
     if (ReadStr(pkg, &json_str))
         return ERR_UNPACK_SAVED_JSON;
     *json_obj = cJSON_Parse(json_str);
-    free(json_str);
+    myfree(json_str);
     if (*json_obj == 0)
         return ERR_UNPACK_SAVED_PARSEJSON;
     assert(pkg->_read_pos == pkg->_write_pos);
@@ -987,7 +987,7 @@ int32 UnpackSavedataBin(EdpPacket* pkg, cJSON** desc_obj,
     if (ReadStr(pkg, &desc_str))
         return ERR_UNPACK_SAVED_BIN_DESC;
     *desc_obj = cJSON_Parse(desc_str); 
-    free(desc_str);
+    myfree(desc_str);
     if (*desc_obj == 0)
         return ERR_UNPACK_SAVED_PARSEDESC;
     if (ReadUint32(pkg, bin_len))

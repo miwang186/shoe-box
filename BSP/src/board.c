@@ -35,7 +35,7 @@
  
   //网络设备
 #include "net_device.h"
- 
+#include "fontupd.h"
 #include "GUI.h"
 /*@{*/
 
@@ -81,11 +81,15 @@ void rt_hw_board_init(void)
 	
 	xpt2046_Init();														//初始化xpt2046用IO口（模拟SPI、中断IO）	
 
+	SPI_Flash_Init();
+	
+	font_init();
+	
+	IIC_Init();					//与DHT11共用引脚
+	
 	Buzzer_Init();														//蜂鸣器初始化
 	
 	Relay_Init();														//初始化继电器
-	
-//	IIC_Init();															//软件IIC总线初始化
 	
 	Check_PowerOn(); 													//上电自检
 	
@@ -95,22 +99,41 @@ void rt_hw_board_init(void)
 //	TIM_SetCompare2(TIM3,4999);//得到占空比为50%的pwm波形
 	TIME2_5PWM_Init(TIM3,99,35);//频率为：72*10^6/(99+1)/(35+1)=20KHz
 	TIM_SetCompare2(TIM3,10);//得到占空比为10%的pwm波形
+	uint8_t dat[256];
+	AT24C02_ReadBytes(0,dat,200);
 	
-//	//先读出ssid、pswd、devid、apikey
-//	if(!Info_Check())														//如果EEPROM里有信息
-//	{
-//		//AT24C02_Clear(0, 255, 256);Iwdg_Feed();
-//		UsartPrintf(USART_DEBUG, "1.ssid_pswd in EEPROM\r\n");
-//		Info_Read();
-//	}
-//	else //没有数据
-//	{
-		UsartPrintf(USART_DEBUG, " 1.ssid_pswd in ROM\r\n");
-//	}
+	if(RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == SET) 								//如果是看门狗复位则提示
+	{
+		UsartPrintf(USART_DEBUG, "WARN:	IWDG Reboot\r\n");
+		
+		RCC_ClearFlag();														//清除看门狗复位标志位
+		
+		faultTypeReport = faultType = FAULT_REBOOT; 							//标记为重启错误
+		
+		if(!Info_Check() && checkInfo.EEPROM_OK)								//如果EEPROM里有信息
+			Info_Read();
+	}
+	else
+	{
+		//先读出ssid、pswd、devid、apikey
+		if(!Info_Check())														//如果EEPROM里有信息
+		{
+			//AT24C02_Clear(0, 255, 256);
+			UsartPrintf(USART_DEBUG, " 1.ssid_pswd in EEPROM\r\n");
+			Info_Read();
+		}
+		else //没有数据
+		{
+			UsartPrintf(USART_DEBUG, "1.ssid_pswd in ROM\r\n");
+		}
+		
+		UsartPrintf(USART_DEBUG, "2.SSID: %s,   PSWD: %s\r\n"
+								"DEVID: %s,     APIKEY: %s\r\n"
+								, netDeviceInfo.staName, netDeviceInfo.staPass
+								, oneNetInfo.devID, oneNetInfo.apiKey);
+	}
 	
-	UsartPrintf(USART_DEBUG, "2.SSID: %s,   PSWD: %s\r\n""DEVID: %s,     APIKEY: %s\r\n"
-							, netDeviceInfo.staName, netDeviceInfo.staPass
-							, oneNetInfo.devID, oneNetInfo.apiKey);
+	Iwdg_Init(4, 1250); 	//64分频，每秒625次，重载1250次，2s
 
 	RTOS_TimerInit();
 	

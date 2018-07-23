@@ -21,7 +21,7 @@
 #include "selfcheck.h"
 
 
-CHECK_INFO checkInfo = {DEV_ERR, DEV_ERR, DEV_ERR, DEV_ERR, DEV_ERR};
+CHECK_INFO checkInfo = {DEV_OK, DEV_OK, DEV_OK, DEV_OK, DEV_OK};
 
 
 /*

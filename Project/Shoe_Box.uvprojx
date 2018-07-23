@@ -49,7 +49,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\Objects\</OutputDirectory>
-          <OutputName>TFTLCD</OutputName>
+          <OutputName>shoe box</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -299,7 +299,7 @@
               <OCR_RVCT9>
                 <Type>0</Type>
                 <StartAddress>0x20000000</StartAddress>
-                <Size>0x10000</Size>
+                <Size>0x20000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -336,7 +336,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\FW_LIB\F10x_FWLIB\inc;..\APP;..\BSP\inc;..\EDP;..\EMWIN\STemWin\inc;..\EMWIN\STemWin\Config;..\MALLOC;..\EMWIN\Demo;..\RT-Thread\include;..\RT-Thread;..\RT-Thread\DeviceDrivers\inc;..\RT-Thread\DeviceDrivers;..\NET\device\inc;..\NET\protocol\inc</IncludePath>
+              <IncludePath>..\FW_LIB\F10x_FWLIB\inc;..\APP;..\BSP\inc;..\EDP;..\EMWIN\STemWin\inc;..\EMWIN\STemWin\Config;..\MALLOC;..\EMWIN\Demo;..\RT-Thread\include;..\RT-Thread;..\RT-Thread\DeviceDrivers\inc;..\RT-Thread\DeviceDrivers;..\NET\device\inc;..\NET\protocol\inc;..\EMWIN\GUIBulder;..\SYSTEM;..\TEXT;..\EMWIN\STemWinHZ</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -466,14 +466,64 @@
               <FilePath>..\BSP\src\relay.c</FilePath>
             </File>
             <File>
-              <FileName>eeprom.c</FileName>
+              <FileName>flash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\src\eeprom.c</FilePath>
+              <FilePath>..\BSP\src\flash.c</FilePath>
             </File>
             <File>
-              <FileName>iic.c</FileName>
+              <FileName>spi.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\BSP\src\iic.c</FilePath>
+              <FilePath>..\BSP\src\spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>info.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\src\info.c</FilePath>
+            </File>
+            <File>
+              <FileName>i2c.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\src\i2c.c</FilePath>
+            </File>
+            <File>
+              <FileName>at24c02.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\src\at24c02.c</FilePath>
+            </File>
+            <File>
+              <FileName>iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\BSP\src\iwdg.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>NET_Device</GroupName>
+          <Files>
+            <File>
+              <FileName>net_device.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\NET\device\src\net_device.c</FilePath>
+            </File>
+            <File>
+              <FileName>net_io.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\NET\device\src\net_io.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>NET_protocol</GroupName>
+          <Files>
+            <File>
+              <FileName>fault.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\NET\protocol\src\fault.c</FilePath>
+            </File>
+            <File>
+              <FileName>onenet.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\NET\protocol\src\onenet.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -513,12 +563,92 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>EMWIN_Demo</GroupName>
+          <Files>
+            <File>
+              <FileName>imagebmp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\GUIBulder\imagebmp.c</FilePath>
+            </File>
+            <File>
+              <FileName>main_dispaly.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\GUIBulder\main_dispaly.c</FilePath>
+            </File>
+            <File>
+              <FileName>page1DLG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\GUIBulder\page1DLG.c</FilePath>
+            </File>
+            <File>
+              <FileName>page2DLG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\GUIBulder\page2DLG.c</FilePath>
+            </File>
+            <File>
+              <FileName>page3DLG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\GUIBulder\page3DLG.c</FilePath>
+            </File>
+            <File>
+              <FileName>page4DLG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\GUIBulder\page4DLG.c</FilePath>
+            </File>
+            <File>
+              <FileName>page5DLG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\GUIBulder\page5DLG.c</FilePath>
+            </File>
+            <File>
+              <FileName>page6DLG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\GUIBulder\page6DLG.c</FilePath>
+            </File>
+            <File>
+              <FileName>page7DLG.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\GUIBulder\page7DLG.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>EMWIN_LIB</GroupName>
           <Files>
             <File>
               <FileName>STemWin526_CM3_OS_Keil.lib</FileName>
               <FileType>4</FileType>
               <FilePath>..\EMWIN\STemWin\Lib\STemWin526_CM3_OS_Keil.lib</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>EMWIN_HZ</GroupName>
+          <Files>
+            <File>
+              <FileName>GUI_FontHZ12.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\STemWinHZ\GUI_FontHZ12.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_FontHZ16.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\STemWinHZ\GUI_FontHZ16.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_FontHZ24.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\STemWinHZ\GUI_FontHZ24.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUI_UC_EncodeNone.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\STemWinHZ\GUI_UC_EncodeNone.c</FilePath>
+            </File>
+            <File>
+              <FileName>GUICharPEx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\EMWIN\STemWinHZ\GUICharPEx.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -580,10 +710,15 @@
               <FileType>1</FileType>
               <FilePath>..\FW_LIB\F10x_FWLIB\src\stm32f10x_dma.c</FilePath>
             </File>
+            <File>
+              <FileName>stm32f10x_iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\FW_LIB\F10x_FWLIB\src\stm32f10x_iwdg.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>core_cm3</GroupName>
+          <GroupName>SYSTEM</GroupName>
           <Files>
             <File>
               <FileName>stm32f10x_it.c</FileName>
@@ -594,6 +729,16 @@
               <FileName>core_cm3.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\FW_LIB\CMSIS\CM3\CoreSupport\core_cm3.c</FilePath>
+            </File>
+            <File>
+              <FileName>delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\SYSTEM\delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>sys.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\SYSTEM\sys.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -723,232 +868,22 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>EMWIN_Demo</GroupName>
-          <Files>
-            <File>
-              <FileName>test.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\test.c</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>0</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>2</vShortEn>
-                    <vShortWch>2</vShortWch>
-                    <v6Lto>2</v6Lto>
-                    <v6WtE>2</v6WtE>
-                    <v6Rtti>2</v6Rtti>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
-            </File>
-            <File>
-              <FileName>GUIDEMO.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_AntialiasedText.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_AntialiasedText.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Automotive.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Automotive.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_BarGraph.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_BarGraph.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Bitmap.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Bitmap.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_ColorBar.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_ColorBar.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Conf.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Conf.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Cursor.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Cursor.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Fading.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Fading.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Graph.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Graph.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_IconView.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_IconView.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_ImageFlow.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_ImageFlow.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Intro.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Intro.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Listview.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Listview.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_RadialMenu.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_RadialMenu.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Resource.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Resource.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Skinning.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Skinning.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Speed.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Speed.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Speedometer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Speedometer.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Start.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Start.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Touch.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Touch.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_TransparentDialog.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_TransparentDialog.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_Treeview.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_Treeview.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_VScreen.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_VScreen.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_WashingMachine.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_WashingMachine.c</FilePath>
-            </File>
-            <File>
-              <FileName>GUIDEMO_ZoomAndRotate.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\EMWIN\Demo\GUIDEMO_ZoomAndRotate.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>NET_Device</GroupName>
-          <Files>
-            <File>
-              <FileName>net_device.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\NET\device\src\net_device.c</FilePath>
-            </File>
-            <File>
-              <FileName>net_io.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\NET\device\src\net_io.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>NET_protocol</GroupName>
-          <Files>
-            <File>
-              <FileName>fault.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\NET\protocol\src\fault.c</FilePath>
-            </File>
-            <File>
-              <FileName>onenet.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\NET\protocol\src\onenet.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>DOC</GroupName>
           <Files>
             <File>
               <FileName>readme.txt</FileName>
               <FileType>5</FileType>
               <FilePath>..\Doc\readme.txt</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>TEXT</GroupName>
+          <Files>
+            <File>
+              <FileName>fontupd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\TEXT\fontupd.c</FilePath>
             </File>
           </Files>
         </Group>

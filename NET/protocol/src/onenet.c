@@ -490,7 +490,7 @@ _Bool OneNet_SendData(SaveDataType type, unsigned char len)
 	{
 		OneNet_Load_DataStream(type, send_buf, len);								//加载数据流
 		NET_DEVICE_SendData(send_pkg->_data, send_pkg->_write_pos);					//上传数据到平台
-		UsartPrintf(USART_DEBUG, "%s \r\n",(char *)send_buf);
+//		UsartPrintf(USART_DEBUG, "%s \r\n",(char *)send_buf);
 		DeleteBuffer(&send_pkg);													//删包
 		
 		faultTypeReport = FAULT_NONE;												//发送之后清除标记
@@ -729,7 +729,9 @@ void OneNet_App(unsigned char *cmd)
 		OneNet_Replace(cmd, 4);
 	
 	dataPtr = strstr((const char *)cmd, ":");			//搜索'}'
-
+	
+	UsartPrintf(USART_DEBUG,"Tips:	OneNet Recvice: %s\r\n",&cmd[40]);
+	
 	if(dataPtr != NULL)									//如果找到了
 	{
 		dataPtr++;

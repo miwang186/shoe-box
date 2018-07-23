@@ -1,6 +1,12 @@
 #include "stm32f10x.h"
 #include "dht11.h"
-#include "delay.h"
+#include "sw_delay.h"
+#include "sys.h"
+
+#define DHT11_Mode_Out_PP()
+#define DHT11_Mode_IPU()
+
+static uint8_t dht11_index = 0;
 
  /**************************************************************************************
  * 描  述 : 初始化DHT11信号引脚为输出
@@ -13,43 +19,44 @@ void DHT11_GPIO_Config(void)
 
 	RCC_APB2PeriphClockCmd(DHT11_CLK, ENABLE); 
 													   
-	GPIO_InitStructure.GPIO_Pin = DHT11_PIN;	
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;   //推挽输出
+	GPIO_InitStructure.GPIO_Pin = DHT11_PIN1|DHT11_PIN2;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;   //开漏输出
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
 	GPIO_Init(DHT11_PORT, &GPIO_InitStructure);		  
 
-	GPIO_SetBits(DHT11_PORT, DHT11_PIN);	 
+	GPIO_SetBits(DHT11_PORT, DHT11_PIN1|DHT11_PIN2);	 
 }
 
- /**************************************************************************************
- * 描  述 : 初始化DHT11信号引脚为上拉输入模式
- * 入  参 : 无
- * 返回值 : 无
- **************************************************************************************/
-static void DHT11_Mode_IPU(void)
+static uint8_t DHT11_DATA_IN()
 {
-	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	GPIO_InitStructure.GPIO_Pin = DHT11_PIN;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU ;    //上拉输入
-	GPIO_Init(DHT11_PORT, &GPIO_InitStructure);	 
+	if(dht11_index == 1)
+	{
+		return GPIO_ReadInputDataBit(DHT11_PORT,DHT11_PIN1);
+	}
+	else 
+	{
+		return GPIO_ReadInputDataBit(DHT11_PORT,DHT11_PIN2);		
+	}
 }
-
- /**************************************************************************************
- * 描  述 : 使DHT11-DATA引脚变为推挽输出模式
- * 入  参 : 无
- * 返回值 : 无
- **************************************************************************************/
-static void DHT11_Mode_Out_PP(void)
+void DHT11_DATA_OUT(uint8_t dat)
 {
-	GPIO_InitTypeDef GPIO_InitStructure;
-														   
-	GPIO_InitStructure.GPIO_Pin = DHT11_PIN;	
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;    //推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(DHT11_PORT, &GPIO_InitStructure);	 	 
+	if(dht11_index == 1)
+	{
+//		PBout(DHT11_PIN1) = dat;
+		if(dat)
+			GPIO_SetBits(DHT11_PORT,DHT11_PIN1);
+		else
+			GPIO_ResetBits(DHT11_PORT,DHT11_PIN1);	
+	}
+	else 
+	{
+//		PBout(DHT11_PIN2) = dat;
+		if(dat)
+			GPIO_SetBits(DHT11_PORT,DHT11_PIN2);
+		else
+			GPIO_ResetBits(DHT11_PORT,DHT11_PIN2);	
+	}	
 }
-
  /**************************************************************************************
  * 描  述 : 从DHT11读取一个字节，MSB先行
  * 入  参 : 无
@@ -84,11 +91,11 @@ static uint8_t Read_Byte(void)
  * 入  参 : 8bit 湿度整数 + 8bit 湿度小数 + 8bit 温度整数 + 8bit 温度小数 + 8bit 校验和 
  * 返回值 : uint8_t
  **************************************************************************************/
-uint8_t Read_DHT11(DHT11_Data_TypeDef *DHT11_Data)
+uint8_t Read_DHT11(DHT11_Data_TypeDef *DHT11_Data,uint8_t index)
 {
 	uint8_t timeout = 80;
 	DHT11_Mode_Out_PP();   //输出模式
-	
+	dht11_index = index;
 	DHT11_DATA_OUT(LOW);   //主机拉低
 	sw_delay_ms(18);       //延时18ms
 	

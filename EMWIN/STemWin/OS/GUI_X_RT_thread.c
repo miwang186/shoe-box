@@ -57,7 +57,7 @@ Purpose     : This file provides emWin Interface with FreeRTOS
     
 /* FreeRTOS include files */
 #include <rtthread.h>
-#include "delay.h"    
+#include "sw_delay.h"    
 /*********************************************************************
 *
 * Global data
@@ -87,7 +87,7 @@ int GUI_X_GetTime(void)
 
 void GUI_X_Delay(int ms)
 {
-	rt_uint8_t delay_ms;
+	rt_uint8_t sw_ms;
 //	rt_uint32_t ticks;
 //    ticks = (ms * 1000) / RT_TICK_PER_SECOND;
 //	rt_thread_delay(ticks);
@@ -95,8 +95,8 @@ void GUI_X_Delay(int ms)
 	{
 		rt_thread_delay(ms/5);	
 	}
-	delay_ms = ms%5;
-	sw_delay_ms(delay_ms);
+	sw_ms = ms%5;
+	sw_delay_ms(sw_ms);
 }
 
 /*********************************************************************
@@ -160,12 +160,12 @@ void GUI_X_Unlock(void)
 		rt_kprintf("DispSem release faill! \r\n");						
 	}
 }
-extern struct rt_thread *rt_current_thread;
+extern rt_uint8_t rt_current_priority;
 //放回任务ID，此处返回的是任务优先级，由于UCOSIII支持时间片
 //轮转调度，因此如果使用了时间片轮转调度功能的话有可能会出错！
 U32 GUI_X_GetTaskId(void)
 {
-	return rt_current_thread->current_priority;
+	return rt_current_priority;
 }
 
 void GUI_X_WaitEvent (void) 

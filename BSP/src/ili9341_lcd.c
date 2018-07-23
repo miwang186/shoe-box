@@ -1,7 +1,7 @@
 #include "stm32f10x.h"
 #include "ili9341_lcd.h"
 #include "ascii.h"	
-#include "delay.h"
+#include "sw_delay.h"
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>

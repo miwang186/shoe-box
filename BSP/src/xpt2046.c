@@ -1,6 +1,7 @@
 #include "stm32f10x.h"
 #include "ili9341_lcd.h"
 #include "xpt2046.h"
+#include "sw_delay.h"
 #include "delay.h"
 
 volatile uint8_t touch_flag;
