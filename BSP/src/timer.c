@@ -17,7 +17,8 @@ void PWM_GPIO_Init()
 }
 
 void TIME2_5PWM_Init(TIM_TypeDef * TIMx, unsigned short arr, unsigned short psc)
-{	
+{
+	TIM_OCInitTypeDef  TIM_OCInitStructure;							//定义结构体	
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;					//定义初始化结构体
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE); 			//使能定时器3时钟
 	PWM_GPIO_Init();
@@ -28,7 +29,7 @@ void TIME2_5PWM_Init(TIM_TypeDef * TIMx, unsigned short arr, unsigned short psc)
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  	//向上计数
 	TIM_TimeBaseInit(TIMx, &TIM_TimeBaseStructure); 				//根据以上功能对定时器进行初始化
 	
-	TIM_OCInitTypeDef  TIM_OCInitStructure;							//定义结构体
+
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2;				//选择定时器模式，TIM脉冲宽度调制模式2
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;	//比较输出使能
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;		//输出比较极性低

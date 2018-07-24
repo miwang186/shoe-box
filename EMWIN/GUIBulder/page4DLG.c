@@ -43,7 +43,9 @@
 *
 **********************************************************************
 */
-
+static GRAPH_DATA_Handle  FrateData;                    /* 用于 GRAPH_DATA 类型的句柄 */
+static GRAPH_SCALE_Handle FrateVscale;					/*标度句柄*/
+static GUI_COLOR 		FrateColor = GUI_LIGHTCYAN;				/* 曲线的颜色值 */
 // USER START (Optionally insert additional static data)
 // USER END
 
@@ -54,7 +56,7 @@
 static const GUI_WIDGET_CREATE_INFO _aDialogpage4Create[] = {
   { WINDOW_CreateIndirect, "page4", ID_WINDOW_3, 0, 0, 310, 120, 0, 0x0, 0 },
   { GRAPH_CreateIndirect, "p4rate", ID_GRAPH_40, 0, 24, 306, 76, 0, 0x0, 2 },
-  { CHECKBOX_CreateIndirect, "p4rate", ID_CHECKBOX_40, 106, 2, 80, 20, 0, 0x0, 0 },
+  { CHECKBOX_CreateIndirect, "p4rate", ID_CHECKBOX_40, 120, 2, 80, 20, 0, 0x0, 0 },
   // USER START (Optionally insert additional widgets)
   // USER END
 };
@@ -90,14 +92,27 @@ static void _cbpage4Dialog(WM_MESSAGE * pMsg) {
     // Initialization of 'p4rate'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_40);
-    GRAPH_SetBorder(hItem, 2, 2, 2, 2);
-    //
+  
+    GRAPH_SetBorder(hItem,20, 2, 2, 2);
+	GRAPH_SetGridDistX(hItem,20);	//网格X大小
+	GRAPH_SetGridDistY(hItem,10);	//网格Y大小
+	GRAPH_SetGridVis(hItem,1);		//显示网格
+	GRAPH_SetVSizeY(hItem,100);
+	
+	FrateVscale = GRAPH_SCALE_Create(2,GUI_TA_HORIZONTAL,GRAPH_SCALE_CF_VERTICAL,20);
+	GRAPH_SCALE_SetFont(FrateVscale,GUI_FONT_8_ASCII);
+	GRAPH_SCALE_SetTextColor(FrateVscale,GUI_BLUE);
+	GRAPH_AttachScale(hItem,FrateVscale); 
+ 
+	FrateData = GRAPH_DATA_YT_Create(FrateColor, 300, 0, 0);
+	WIDGET_SetEffect(hItem, &WIDGET_Effect_None);  
     // Initialization of 'p4rate'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_40);
     CHECKBOX_SetText(hItem, "风速");
-    CHECKBOX_SetTextColor(hItem, 0x00FF0000);
-  	CHECKBOX_SetFont(hItem,&GUI_FontHZ12);  
+    CHECKBOX_SetTextColor(hItem, FrateColor);
+  	CHECKBOX_SetFont(hItem,&GUI_FontHZ12); 
+	CHECKBOX_SetState(hItem,1);
     // USER START (Optionally insert additional code for further widget initialization)
     // USER END
     break;
@@ -116,8 +131,18 @@ static void _cbpage4Dialog(WM_MESSAGE * pMsg) {
         // USER END
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_40);
+		if(CHECKBOX_IsChecked(hItem))
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_40);
+			GRAPH_AttachData(hItem,FrateData);
+		}
+		else
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_40);
+			GRAPH_DATA_YT_Clear(FrateData);
+			GRAPH_DetachData(hItem,FrateData);	
+		}
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -127,8 +152,14 @@ static void _cbpage4Dialog(WM_MESSAGE * pMsg) {
     // USER END
     }
     break;
-  // USER START (Optionally insert additional message handling)
-  // USER END
+	case WM_TIMER:
+		if(WM_GetTimerId(pMsg->Data.v) == 0)
+		{
+			GRAPH_DATA_YT_AddValue(FrateData, deviceStatus.motor_rate);
+			/* 重启定时器 */
+			WM_RestartTimer(pMsg->Data.v, 1000);
+		}
+		break;	
   default:
     WM_DefaultProc(pMsg);
     break;
@@ -150,7 +181,13 @@ WM_HWIN Createpage4(void) {
   WM_HWIN hWin;
 
   hWin = GUI_CreateDialogBox(_aDialogpage4Create, GUI_COUNTOF(_aDialogpage4Create), _cbpage4Dialog, WM_HBKWIN, 0, 0);
-  return hWin;
+	/* 创建一个定时器 */
+	WM_CreateTimer(hWin, 		/* 接受信息的窗口的句柄 */
+				   0, 	        /* 用户定义的Id。如果不对同一窗口使用多个定时器，此值可以设置为零。 */
+				   1000,        /* 周期，此周期过后指定窗口应收到消息*/
+				   0);	
+	
+	return hWin;
 }
 
 // USER START (Optionally insert additional public code)

@@ -14,6 +14,8 @@ void Relay_Init(void)
 	GPIO_Init(GPIOG, &GPIO_InitStructure);
 	
 	RELAY1_OFF();
+	RELAY2_OFF();
+	
 }
 
 uint8_t Read_Relay_Status(uint8_t index)

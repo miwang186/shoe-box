@@ -8,6 +8,9 @@
 #include "net_device.h"
 
 #include "main_dispaly.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
 
 #define IWDG_TASK_PRIO		2	//看门狗任务
 #define TOUCH_TASK_PRIO		3	//触摸任务
@@ -78,19 +81,37 @@ struct rt_thread NET_Task_Handle;	//任务句柄
 ALIGN(RT_ALIGN_SIZE) unsigned char ALTER_TASK_STK[ALTER_TASK_STK_SIZE]; //
 struct rt_thread ALTER_Task_Handle;	//任务句柄
 
-DHT11_INFO 		dht11Info;	/*DTH11*/							
-GY_906_INFO 	gy906Info;	/*gy906*/	
+DHT11_INFO 		dht11Info = {30,40,30,40};	/*DTH11*/							
+GY_906_INFO 	gy906Info = {30,30};		/*gy906*/	
 LED_STATUS 		ledStatus = {0,0,0,0};
-DEVICE_STATUS	deviceStatus = {18000,10,1};
+DEVICE_STATUS	deviceStatus = {18000,10,0,0};
+
+
+Warning_Info warning_info =
+{
+	0x0f,
+	5,
+	60,
+	60,
+	20,
+	0,
+	0,	
+	145
+};
 //数据流
 DATA_STREAM dataStream[] ={
 								{"led1", &ledStatus.Led1Sta, TYPE_BOOL, 1},
 								{"led2", &ledStatus.Led2Sta, TYPE_BOOL, 1},
 								{"led3", &ledStatus.Led3Sta, TYPE_BOOL, 1},
 								{"led4", &ledStatus.Led4Sta, TYPE_BOOL, 1},
-								{"fanner_key", &deviceStatus.motor_key, TYPE_BOOL, 1},
-								{"relay_key", &deviceStatus.relay_key, TYPE_BOOL, 1},								
-								{"fanner_rate", &deviceStatus.motor_rate, TYPE_USHORT, 1},
+								{"fanner_key",&deviceStatus.motor_key, TYPE_BOOL, 1},
+								{"relay_key",&deviceStatus.relay_key, TYPE_BOOL, 1},								
+								{"fanner_rate",&deviceStatus.motor_rate, TYPE_USHORT, 1},
+								{"timing_sec",&deviceStatus.timing_sec, TYPE_USHORT, 1},
+								{"temp_max", &warning_info.max_temp, TYPE_CHAR, 1},
+								{"temp_min", &warning_info.min_temp, TYPE_CHAR, 1},
+								{"humi_max", &warning_info.max_humi, TYPE_UCHAR, 1},
+								
 																
 								{"dth11-1_temp", &dht11Info.tempreture_1, TYPE_FLOAT, 1},
 								{"dth11-1_humi", &dht11Info.humidity_1, TYPE_FLOAT, 1},
@@ -219,7 +240,56 @@ void NET_Task(void *pdata)
 	}
 
 }
-
+static void auto_adjust_temp()
+{
+	uint16_t temp_Average = 0;
+	uint16_t humi_Average = 0;	
+	
+	if(fabs(dht11Info.tempreture_1 - dht11Info.tempreture_2) <= 20)
+	{
+		temp_Average = (dht11Info.tempreture_1 +dht11Info.tempreture_2)/2;
+		if(warning_info.enable_flag & TEMP_MAX_SWITCH)
+		{	
+			if(warning_info.max_temp < temp_Average || warning_info.max_temp < gy906Info.temp_to)
+			{
+				RELAY1_OFF();
+				RELAY2_OFF();
+				SET_PWM_Arr(1);		
+				deviceStatus.relay_key = 0;
+				deviceStatus.motor_key = 0;
+				deviceStatus.motor_rate = 1;
+			}
+		}
+		
+		if(warning_info.enable_flag & TEMP_MIN_SWITCH)
+		{	
+			if(warning_info.min_temp > temp_Average || warning_info.min_temp > gy906Info.temp_to)
+			{
+				RELAY1_ON();
+				RELAY2_ON();
+				SET_PWM_Arr(40);
+				deviceStatus.relay_key = 1;
+				deviceStatus.motor_key = 1;
+				deviceStatus.motor_rate = 40;				
+			}
+		}		
+	}
+	
+	if(fabs(dht11Info.humidity_1 - dht11Info.humidity_2) <= 30)
+	{
+		humi_Average = (dht11Info.humidity_1 + dht11Info.humidity_2)/2;		
+		if(warning_info.enable_flag & HUMI_MAX_SWITCH)
+		{
+			if(warning_info.max_humi < humi_Average)
+			{		
+				RELAY2_ON();
+				SET_PWM_Arr(60);	
+				deviceStatus.motor_key = 1;
+				deviceStatus.motor_rate = 60;				
+			}				
+		}
+	}		
+}
 /*
 ************************************************************
 *	函数名称：	TIMER_Task
@@ -263,11 +333,12 @@ void TIMER_Task(void *pdata)
 		}
 		else 
 		{
-			RELAY1_KEY = 0;
-			RELAY2_KEY = 0;
+			RELAY1_OFF();
+			RELAY2_OFF();
 			SET_PWM_Arr(1);
+			warning_info.enable_flag = 0;
 		}
-		
+		auto_adjust_temp();
 		RTOS_TimeDly(200);													//挂起任务1s
 	
 	}

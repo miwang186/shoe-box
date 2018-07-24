@@ -44,7 +44,9 @@
 *
 **********************************************************************
 */
-
+static GRAPH_DATA_Handle  humiData[2];                         /* 用于 GRAPH_DATA 类型的句柄 */
+static GRAPH_SCALE_Handle humiVscale;
+static GUI_COLOR _hColor[2] = {GUI_DARKBLUE,GUI_DARKRED};/* 曲线的颜色值 */
 // USER START (Optionally insert additional static data)
 // USER END
 
@@ -56,7 +58,7 @@ static const GUI_WIDGET_CREATE_INFO _aDialogpage3Create[] = {
   { WINDOW_CreateIndirect, "page3", ID_WINDOW_2, 0, 0, 310, 120, 0, 0x0, 0 },
   { GRAPH_CreateIndirect, "allhumi", ID_GRAPH_30, 0, 24, 306, 76, 0, 0x0, 2 },
   { CHECKBOX_CreateIndirect, "hum1", ID_CHECKBOX_30, 50, 2, 80, 20, 0, 0x0, 0 },
-  { CHECKBOX_CreateIndirect, "humi2", ID_CHECKBOX_31, 180, 1, 80, 20, 0, 0x0, 0 },
+  { CHECKBOX_CreateIndirect, "humi2", ID_CHECKBOX_31, 180, 2, 80, 20, 0, 0x0, 0 },
   // USER START (Optionally insert additional widgets)
   // USER END
 };
@@ -91,21 +93,46 @@ static void _cbpage3Dialog(WM_MESSAGE * pMsg) {
     // Initialization of 'allhumi'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_30);
-    GRAPH_SetBorder(hItem, 2, 2, 2, 2);
+    GRAPH_SetBorder(hItem,20, 2, 2, 2);
+	GRAPH_SetGridDistX(hItem,20);	//网格X大小
+	GRAPH_SetGridDistY(hItem,10);	//网格Y大小
+	GRAPH_SetGridVis(hItem,1);		//显示网格
+//	GRAPH_DATA_YT_SetOffY(hItem,-10);	//Y轴数据的偏移
+//	GRAPH_SetVSizeY(hItem,80);
+	humiVscale = GRAPH_SCALE_Create(2,GUI_TA_HORIZONTAL,GRAPH_SCALE_CF_VERTICAL,20);
+	GRAPH_SCALE_SetFont(humiVscale,GUI_FONT_8_ASCII);
+	GRAPH_SCALE_SetTextColor(humiVscale,GUI_BLUE);
+	GRAPH_AttachScale(hItem,humiVscale); 
+  
+//	humiHscale = GRAPH_SCALE_Create(2,GUI_TA_BOTTOM,GRAPH_SCALE_CF_HORIZONTAL,40);
+//	GRAPH_SCALE_SetFont(humiHscale,GUI_FONT_8_ASCII);
+//	GRAPH_SCALE_SetTextColor(humiHscale,GUI_WHITE);
+//	GRAPH_AttachScale(hItem,humiHscale); 
+  
+	humiData[0] = GRAPH_DATA_YT_Create(_hColor[0], 300, 0, 0);
+	humiData[1] = GRAPH_DATA_YT_Create(_hColor[1], 300, 0, 0);
+
+//	/* 为绘图控件添加数据对象 */
+//	GRAPH_AttachData(hItem, humiData[0]);
+//	GRAPH_AttachData(hItem, humiData[1]);
+	WIDGET_SetEffect(hItem, &WIDGET_Effect_None);  
     //
     // Initialization of 'hum1'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_30);
     CHECKBOX_SetText(hItem, "湿度1");
-    CHECKBOX_SetTextColor(hItem, 0x0000ca00);
+    CHECKBOX_SetTextColor(hItem, _hColor[0]);
   	CHECKBOX_SetFont(hItem,&GUI_FontHZ12);
+	CHECKBOX_SetState(hItem,1);	
     //
     // Initialization of 'humi2'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_31);
     CHECKBOX_SetText(hItem, "湿度2");
-    CHECKBOX_SetTextColor(hItem, 0x000d86ff);
+    CHECKBOX_SetTextColor(hItem, _hColor[1]);
   	CHECKBOX_SetFont(hItem,&GUI_FontHZ12);  
+	CHECKBOX_SetState(hItem,1);
+		
     // USER START (Optionally insert additional code for further widget initialization)
     // USER END
     break;
@@ -124,8 +151,18 @@ static void _cbpage3Dialog(WM_MESSAGE * pMsg) {
         // USER END
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_30);
+		if(CHECKBOX_IsChecked(hItem))
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_30);
+			GRAPH_AttachData(hItem,humiData[0]);
+		}
+		else
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_30);
+			GRAPH_DATA_YT_Clear(humiData[0]);
+			GRAPH_DetachData(hItem,humiData[0]);	
+		}
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -142,8 +179,18 @@ static void _cbpage3Dialog(WM_MESSAGE * pMsg) {
         // USER END
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_31);
+		if(CHECKBOX_IsChecked(hItem))
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_30);
+			GRAPH_AttachData(hItem,humiData[1]);
+		}
+		else
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_30);
+			GRAPH_DATA_YT_Clear(humiData[1]);
+			GRAPH_DetachData(hItem,humiData[1]);
+		}
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -155,6 +202,15 @@ static void _cbpage3Dialog(WM_MESSAGE * pMsg) {
     break;
   // USER START (Optionally insert additional message handling)
   // USER END
+	case WM_TIMER:
+		if(WM_GetTimerId(pMsg->Data.v) == 0)
+		{
+			GRAPH_DATA_YT_AddValue(humiData[0], dht11Info.humidity_1);
+			GRAPH_DATA_YT_AddValue(humiData[1], dht11Info.humidity_2);
+			/* 重启定时器 */
+			WM_RestartTimer(pMsg->Data.v, 1000);
+		}
+		break;		
   default:
     WM_DefaultProc(pMsg);
     break;
@@ -176,7 +232,13 @@ WM_HWIN Createpage3(void) {
   WM_HWIN hWin;
 
   hWin = GUI_CreateDialogBox(_aDialogpage3Create, GUI_COUNTOF(_aDialogpage3Create), _cbpage3Dialog, WM_HBKWIN, 0, 0);
-  return hWin;
+	/* 创建一个定时器 */
+	WM_CreateTimer(hWin, 		/* 接受信息的窗口的句柄 */
+				   0, 	        /* 用户定义的Id。如果不对同一窗口使用多个定时器，此值可以设置为零。 */
+				   1000,        /* 周期，此周期过后指定窗口应收到消息*/
+				   0);	
+	
+	return hWin;
 }
 
 // USER START (Optionally insert additional public code)

@@ -37,7 +37,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-
+//uint8_t Get_Warning_info(Warning_Info	*info)
+//{
+//	Warning_Info read_dat,sum_crc;
+//	AT24C02_ReadBytes(WARNING_INFO_ADDR, (uint8_t*)&read_dat,sizeof(Warning_Info));
+////	if(read_dat.sum_crc != read_dat.enable_flag)
+//}
 
 
 /*

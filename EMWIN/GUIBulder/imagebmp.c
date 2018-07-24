@@ -28,8 +28,8 @@
   #define GUI_CONST_STORAGE const
 #endif
 
-extern GUI_CONST_STORAGE GUI_BITMAP bm_off;
-extern GUI_CONST_STORAGE GUI_BITMAP bm_on;
+extern GUI_CONST_STORAGE GUI_BITMAP bmp_button_off;
+extern GUI_CONST_STORAGE GUI_BITMAP bmp_button_on;
 
 static GUI_CONST_STORAGE unsigned short button_off[] = {
   0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xF7BE, 0xF7BE, 0xC638, 0xB596, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 0xA554, 
@@ -139,7 +139,7 @@ static GUI_CONST_STORAGE unsigned short button_on[] = {
         0xFED1, 0xFED1, 0xFED1, 0xFED1, 0xFED1, 0xFED1, 0xFED1, 0xFEF3, 0xFF57, 0xFFDE, 0xFFFE, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF
 };
 
-GUI_CONST_STORAGE GUI_BITMAP bm_off = {
+GUI_CONST_STORAGE GUI_BITMAP bmp_button_off = {
   50, // xSize
   25, // ySize
   100, // BytesPerLine
@@ -151,7 +151,7 @@ GUI_CONST_STORAGE GUI_BITMAP bm_off = {
 
 /*************************** End of file ****************************/
 
-GUI_CONST_STORAGE GUI_BITMAP bm_on = {
+GUI_CONST_STORAGE GUI_BITMAP bmp_button_on = {
   50, // xSize
   25, // ySize
   100, // BytesPerLine

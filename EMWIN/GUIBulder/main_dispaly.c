@@ -26,6 +26,7 @@
 #include "imagebmp.h"
 #include "device_info.h"
 #include "onenet.h"
+#include "string.h"
 /*********************************************************************
 *
 *       Defines
@@ -56,7 +57,9 @@
 */
 
 // USER START (Optionally insert additional static data)
-GUI_BITMAP buttonbmp_tab[2];
+static GUI_BITMAP buttonbmp_tab[2];
+static uint8_t is_button_press = 0;
+static uint8_t button_status[2] = {1,1};
 
 // USER END
 
@@ -98,44 +101,72 @@ extern WM_HWIN Createpage7(void);
 static void buff_display(WM_MESSAGE * pMsg)
 {
 	char disp_dat[20];
-	uint16_t hour,minute,sec;
 	WM_HWIN hItem;
-	int page_index;
+	int value;
+	uint16_t hour,minute,sec;
+	static uint8_t display_update_flag = 0;
 
-//	hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_0);
-//	BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[RELAY1_KEY & 0x01],0,0);
 
-//	hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_0);
-//	
-//	BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[RELAY2_KEY & 0x01],0,0);
-
+	if(button_status[0] != RELAY1_KEY)
+	{
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_0);
+		BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[button_status[0] & 0x01],0,0);
+		button_status[0] = RELAY1_KEY; 
+	}
+	
+	if(button_status[1] != RELAY2_KEY)
+	{
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_BUTTON_1);
+		BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[button_status[1] & 0x01],0,0);
+		button_status[1] = RELAY2_KEY; 
+	}
+	
+	hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_0);	
+	value =  SPINBOX_GetValue(hItem);
+	if(deviceStatus.motor_rate != value && !is_button_press)
+	{
+		SPINBOX_SetValue(hItem,deviceStatus.motor_rate);		
+	}
+	
+	
+	if(warning_info.enable_flag & TIMING_MAX_SWITCH)
+	{
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);  		
+		hour = deviceStatus.timing_sec/3600;
+		minute = (deviceStatus.timing_sec%3600)/60;
+		sec = deviceStatus.timing_sec%60;	
+		rt_sprintf(disp_dat,"剩余时间:%d时%d分%d秒",hour,minute,sec);
+		display_update_flag |= 0x01;
+		TEXT_SetText(hItem, disp_dat);			
+	}
+	else if(display_update_flag & 0x01)
+	{
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);  			
+		display_update_flag &= 0xfe;
+		memcpy(disp_dat,"未开启定时",sizeof("未开启定时"));	
+		TEXT_SetText(hItem, disp_dat);		
+	}
 	
 
 	
-	hour = deviceStatus.timing_sec/3600;
-	minute = (deviceStatus.timing_sec%3600)/60;
-	sec = deviceStatus.timing_sec%60;	
-	rt_sprintf(disp_dat,"剩余时间:%d时%d分%d秒",hour,minute,sec);
-	
-	hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);  	
-    TEXT_SetText(hItem, disp_dat);
-
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_5);
 
-	if(oneNetInfo.netWork)
+	if(oneNetInfo.netWork && !(display_update_flag & 0x02))
 	{
 		TEXT_SetText(hItem, "网络状态:已连接");	
+		display_update_flag |= 0x02;
 	}
-    else 
-	{		
+    else if(!oneNetInfo.netWork && display_update_flag & 0x02)
+	{
+		display_update_flag &= 0xfd;
 		TEXT_SetText(hItem, "网络状态:断开");
 	}
-	/*刷新页面显示*/
+	/*刷新0页面显示*/
 	hItem = WM_GetDialogItem(pMsg->hWin, ID_MULTIPAGE_0);  
-	page_index = MULTIPAGE_GetSelection(hItem);
-	if(page_index == 0)
+	value = MULTIPAGE_GetSelection(hItem);
+	if(value == 0)
 	{
-		WM_InvalidateWindow(MULTIPAGE_GetWindow(hItem,page_index));
+		WM_InvalidateWindow(MULTIPAGE_GetWindow(hItem,value));
 	}	
 }
 /*********************************************************************
@@ -230,7 +261,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_TEXT_4);
     TEXT_SetFont(hItem, &GUI_FontHZ16);
-    TEXT_SetTextAlign(hItem, GUI_TA_HCENTER | GUI_TA_VCENTER);
+    TEXT_SetTextAlign(hItem, GUI_TA_LEFT | GUI_TA_VCENTER);
     TEXT_SetTextColor(hItem, GUI_BLACK);
     TEXT_SetText(hItem, "剩余时间:4小时59分59秒");
     //
@@ -276,14 +307,17 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
+		is_button_press = 1;
+	  
         // USER END
         break;
       case WM_NOTIFICATION_RELEASED:
-
+		is_button_press = 0;
 		//SPINBOX_SetValue
         break;
       case WM_NOTIFICATION_MOVED_OUT:
         // USER START (Optionally insert code for reacting on notification message)
+		is_button_press = 0;
         // USER END
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
@@ -306,7 +340,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         // USER START (Optionally insert code for reacting on notification message)
 		BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[RELAY1_KEY & 0x01],0,0);
 		RELAY1_KEY =~RELAY1_KEY;
-	  	LED_1_KEY =~LED_1_KEY;							//LED1反转
+	  	LED_1_KEY =~LED_1_KEY;		//LED1反转
+		button_status[0] = RELAY1_KEY;
+		deviceStatus.relay_key = ~RELAY1_KEY;	  
         // USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)
@@ -326,7 +362,9 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
 		BUTTON_SetBitmapEx(hItem,0,&buttonbmp_tab[RELAY2_KEY&0x01],0,0);	
 	    RELAY2_KEY =~RELAY2_KEY;
 	  	LED_2_KEY =~LED_2_KEY;							//LED1反转
-        // USER END
+		button_status[1] = RELAY2_KEY; 
+		deviceStatus.motor_key = ~RELAY2_KEY;
+		// USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -364,8 +402,8 @@ WM_HWIN Main_Display_Create(void);
 WM_HWIN Main_Display_Create(void) 
 {
 	WM_HWIN hWin;
-	buttonbmp_tab[0] = bm_off;
-	buttonbmp_tab[1] = bm_on;
+	buttonbmp_tab[0] = bmp_button_off;
+	buttonbmp_tab[1] = bmp_button_on;
 	
 	hWin = GUI_CreateDialogBox(_aDialogCreate, GUI_COUNTOF(_aDialogCreate), _cbDialog, WM_HBKWIN, 0, 0);
 	WM_CreateTimer(WM_GetClientWindow(hWin),0,1000,0);

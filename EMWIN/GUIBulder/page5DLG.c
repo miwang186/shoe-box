@@ -63,10 +63,10 @@ static const GUI_WIDGET_CREATE_INFO _aDialogCreate[] = {
   { SPINBOX_CreateIndirect, "humi", ID_SPINBOX_51, 85, 50, 64, 36, 0, 0x0, 0 },
   { SPINBOX_CreateIndirect, "tempmax", ID_SPINBOX_52, 240, 5, 64, 36, 0, 0x0, 0 },
   { SPINBOX_CreateIndirect, "tempmin", ID_SPINBOX_53, 240, 50, 64, 36, 0, 0x0, 0 },
-  { CHECKBOX_CreateIndirect, "time_key", ID_CHECKBOX_50, 3, 15, 70, 20, 0, 0x0, 0 },
-  { CHECKBOX_CreateIndirect, "humi",     ID_CHECKBOX_51, 3, 60, 70, 20, 0, 0x0, 0 },
-  { CHECKBOX_CreateIndirect, "tempB_key", ID_CHECKBOX_52, 160, 15, 70, 20, 0, 0x0, 0 },
-  { CHECKBOX_CreateIndirect, "tempS_key", ID_CHECKBOX_53, 160, 60, 70, 20, 0, 0x0, 0 },
+  { CHECKBOX_CreateIndirect, "time_key", ID_CHECKBOX_50, 3, 15, 76, 20, 0, 0x0, 0 },
+  { CHECKBOX_CreateIndirect, "humi",     ID_CHECKBOX_51, 3, 60, 76, 20, 0, 0x0, 0 },
+  { CHECKBOX_CreateIndirect, "tempB_key", ID_CHECKBOX_52, 160, 15, 76, 20, 0, 0x0, 0 },
+  { CHECKBOX_CreateIndirect, "tempS_key", ID_CHECKBOX_53, 160, 60, 76, 20, 0, 0x0, 0 },
   // USER START (Optionally insert additional widgets)
   // USER END
 };
@@ -97,31 +97,62 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
   case WM_INIT_DIALOG:
 	 hItem = pMsg->hWin;
     WINDOW_SetBkColor(hItem, GUI_DARKCYAN);	  
-	GUI_SetColor(GUI_BLACK);	  
+	GUI_SetColor(GUI_BLACK);	
+  
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_50);
+    SPINBOX_SetFont(hItem, GUI_FONT_20_1);
+    SPINBOX_SetRange(hItem,1,9);
+	SPINBOX_SetValue(hItem,warning_info.timing);
+  
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_51);
+    SPINBOX_SetFont(hItem, GUI_FONT_20_1);
+    SPINBOX_SetRange(hItem,1,99);
+	SPINBOX_SetValue(hItem,warning_info.max_humi);  
+
+
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_52);
+    SPINBOX_SetFont(hItem, GUI_FONT_20_1);
+    SPINBOX_SetRange(hItem,50,99);
+	SPINBOX_SetValue(hItem,warning_info.max_temp);  
+
+  
+    hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_53);
+    SPINBOX_SetFont(hItem, GUI_FONT_20_1);
+    SPINBOX_SetRange(hItem,-9,50);
+	SPINBOX_SetValue(hItem,warning_info.min_temp);    
+
     //
     // Initialization of 'Checkbox'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_50);
     CHECKBOX_SetFont(hItem,&GUI_FontHZ12);
-    CHECKBOX_SetText(hItem, "定时");
+    CHECKBOX_SetText(hItem, "定时/小时");
+	if(warning_info.enable_flag & TIMING_MAX_SWITCH)
+		CHECKBOX_SetState(hItem,1);		
     //
     // Initialization of 'Checkbox'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_51);
     CHECKBOX_SetFont(hItem,&GUI_FontHZ12);  
     CHECKBOX_SetText(hItem, "湿度上限");
+	if(warning_info.enable_flag & HUMI_MAX_SWITCH)
+		CHECKBOX_SetState(hItem,1);		
     //
     // Initialization of 'Checkbox'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_52);
     CHECKBOX_SetFont(hItem,&GUI_FontHZ12);
     CHECKBOX_SetText(hItem, "温度上限");
+	if(warning_info.enable_flag & TEMP_MAX_SWITCH)
+		CHECKBOX_SetState(hItem,1);		
     //
     // Initialization of 'Checkbox'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_53);
     CHECKBOX_SetFont(hItem,&GUI_FontHZ12);    
 	CHECKBOX_SetText(hItem, "温度下限");
+	if(warning_info.enable_flag & TEMP_MIN_SWITCH)
+		CHECKBOX_SetState(hItem,1);		
     // USER START (Optionally insert additional code for further widget initialization)
     // USER END
     break;
@@ -130,14 +161,16 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     NCode = pMsg->Data.v;
     switch(Id) {
     case ID_SPINBOX_50: // Notifications sent by 'p6value'
-      switch(NCode) {
+      switch(NCode) {  
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_50);
+		warning_info.timing =  SPINBOX_GetValue(hItem);
+		// USER END
         break;
       case WM_NOTIFICATION_MOVED_OUT:
         // USER START (Optionally insert code for reacting on notification message)
@@ -159,7 +192,8 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_51);
+		warning_info.max_humi =  SPINBOX_GetValue(hItem);
         break;
       case WM_NOTIFICATION_MOVED_OUT:
         // USER START (Optionally insert code for reacting on notification message)
@@ -181,7 +215,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_52);
+		warning_info.max_temp =  SPINBOX_GetValue(hItem);
+	 
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_53);	
+		SPINBOX_SetRange(hItem,-9,warning_info.max_temp); 	  
         break;
       case WM_NOTIFICATION_MOVED_OUT:
         // USER START (Optionally insert code for reacting on notification message)
@@ -203,7 +241,11 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_53);
+		warning_info.min_temp =  SPINBOX_GetValue(hItem);
+	  
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_SPINBOX_52);	
+		SPINBOX_SetRange(hItem,warning_info.min_temp,99); 	  
         break;
       case WM_NOTIFICATION_MOVED_OUT:
         // USER START (Optionally insert code for reacting on notification message)
@@ -225,7 +267,16 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_50);
+		if(CHECKBOX_IsChecked(hItem))
+		{
+			deviceStatus.timing_sec = warning_info.timing * 3600;
+			warning_info.enable_flag |= TIMING_MAX_SWITCH; 
+		}
+		else
+		{
+			warning_info.enable_flag &= ~TIMING_MAX_SWITCH; 			
+		}
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -243,7 +294,15 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_51);
+		if(CHECKBOX_IsChecked(hItem))
+		{
+			warning_info.enable_flag |= HUMI_MAX_SWITCH; 
+		}
+		else
+		{
+			warning_info.enable_flag &= ~HUMI_MAX_SWITCH; 			
+		}
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -261,7 +320,15 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_52);
+		if(CHECKBOX_IsChecked(hItem))
+		{
+			warning_info.enable_flag |= TEMP_MAX_SWITCH; 
+		}
+		else
+		{
+			warning_info.enable_flag &= ~TEMP_MAX_SWITCH; 			
+		}
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -279,7 +346,15 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         break;
       case WM_NOTIFICATION_RELEASED:
         // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_53);
+		if(CHECKBOX_IsChecked(hItem))
+		{
+			warning_info.enable_flag |= TEMP_MIN_SWITCH; 
+		}
+		else
+		{
+			warning_info.enable_flag &= ~TEMP_MIN_SWITCH; 			
+		}
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
         // USER START (Optionally insert code for reacting on notification message)

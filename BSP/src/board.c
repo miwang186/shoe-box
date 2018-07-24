@@ -99,8 +99,6 @@ void rt_hw_board_init(void)
 //	TIM_SetCompare2(TIM3,4999);//得到占空比为50%的pwm波形
 	TIME2_5PWM_Init(TIM3,99,35);//频率为：72*10^6/(99+1)/(35+1)=20KHz
 	TIM_SetCompare2(TIM3,10);//得到占空比为10%的pwm波形
-	uint8_t dat[256];
-	AT24C02_ReadBytes(0,dat,200);
 	
 	if(RCC_GetFlagStatus(RCC_FLAG_IWDGRST) == SET) 								//如果是看门狗复位则提示
 	{

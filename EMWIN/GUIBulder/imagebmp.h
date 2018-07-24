@@ -7,8 +7,8 @@
   #define GUI_CONST_STORAGE const
 #endif
 
-extern GUI_CONST_STORAGE GUI_BITMAP bm_off;
-extern GUI_CONST_STORAGE GUI_BITMAP bm_on;
+extern GUI_CONST_STORAGE GUI_BITMAP bmp_button_off;
+extern GUI_CONST_STORAGE GUI_BITMAP bmp_button_on;
 
 #endif
 

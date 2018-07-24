@@ -45,9 +45,9 @@
 *
 **********************************************************************
 */
-static GRAPH_DATA_Handle  ahData[3];                         /* 用于 GRAPH_DATA 类型的句柄 */
-static GRAPH_SCALE_Handle ahscale;
-static GUI_COLOR _aColor[3] = {0x008000FF,0x000080FF,0x00FF80FF};/* 三种曲线的颜色值 */
+static GRAPH_DATA_Handle  tempData[3];                         /* 用于 GRAPH_DATA 类型的句柄 */
+static GRAPH_SCALE_Handle tempVscale;
+static GUI_COLOR _aColor[3] = {GUI_LIGHTGREEN,GUI_LIGHTRED,GUI_LIGHTYELLOW};/* 三种曲线的颜色值 */
 
 /*********************************************************************
 *
@@ -97,41 +97,51 @@ static void _cbpage2Dialog(WM_MESSAGE * pMsg) {
 	GRAPH_SetGridDistY(hItem,10);	//网格Y大小
 	GRAPH_SetGridVis(hItem,1);		//显示网格
 //	GRAPH_DATA_YT_SetOffY(hItem,-10);	//Y轴数据的偏移
-	GRAPH_SetVSizeY(hItem,80);
-	ahscale = GRAPH_SCALE_Create(2,GUI_TA_HORIZONTAL,GRAPH_SCALE_CF_VERTICAL,10);
-	GRAPH_SCALE_SetFont(ahscale,GUI_FONT_8_ASCII);
-	GRAPH_SCALE_SetTextColor(ahscale,GUI_BLUE);
+//	GRAPH_SetVSizeY(hItem,80);
+	
+	tempVscale = GRAPH_SCALE_Create(2,GUI_TA_HORIZONTAL,GRAPH_SCALE_CF_VERTICAL,20);
+	GRAPH_SCALE_SetFont(tempVscale,GUI_FONT_8_ASCII);
+	GRAPH_SCALE_SetTextColor(tempVscale,GUI_BLUE);
+	GRAPH_AttachScale(hItem,tempVscale); 
+	
+//	tempHscale = GRAPH_SCALE_Create(2,GUI_TA_HORIZONTAL|GUI_TA_TOP,GRAPH_SCALE_CF_HORIZONTAL,40);
+//	GRAPH_SCALE_SetFont(tempHscale,GUI_FONT_8_ASCII);
+//	GRAPH_SCALE_SetTextColor(tempHscale,GUI_BLUE);
+//	GRAPH_AttachScale(hItem,tempHscale); 
   
-	ahData[0] = GRAPH_DATA_YT_Create(_aColor[0], 300, 0, 0);
-	ahData[1] = GRAPH_DATA_YT_Create(_aColor[1], 300, 0, 0);
-	ahData[2] = GRAPH_DATA_YT_Create(_aColor[2], 300, 0, 0);
-	/* 为绘图控件添加数据对象 */
-	GRAPH_AttachData(hItem, ahData[0]);
-	GRAPH_AttachData(hItem, ahData[1]);
-	GRAPH_AttachData(hItem, ahData[2]);
+
+	tempData[0] = GRAPH_DATA_YT_Create(_aColor[0], 300, 0, 0);
+	tempData[1] = GRAPH_DATA_YT_Create(_aColor[1], 300, 0, 0);
+	tempData[2] = GRAPH_DATA_YT_Create(_aColor[2], 300, 0, 0);
+//	/* 为绘图控件添加数据对象 */
+//	GRAPH_AttachData(hItem, tempData[0]);
+//	GRAPH_AttachData(hItem, tempData[1]);
+//	GRAPH_AttachData(hItem, tempData[2]);
 	WIDGET_SetEffect(hItem, &WIDGET_Effect_None);  
     //
     // Initialization of 'temp1'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_20);
     CHECKBOX_SetText(hItem, "温度1");
-    CHECKBOX_SetTextColor(hItem, 0x008000FF);
+    CHECKBOX_SetTextColor(hItem, _aColor[0]);
     CHECKBOX_SetFont(hItem,&GUI_FontHZ12);
-  
+	CHECKBOX_SetState(hItem,1);
     //
     // Initialization of 'temp2'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_21);
     CHECKBOX_SetText(hItem, "温度2");
-    CHECKBOX_SetTextColor(hItem, 0x000080FF);
+    CHECKBOX_SetTextColor(hItem, _aColor[1]);
     CHECKBOX_SetFont(hItem,&GUI_FontHZ12);  
+	CHECKBOX_SetState(hItem,1);
 	//
     // Initialization of 'temp3'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_22);
     CHECKBOX_SetText(hItem, "温度3");
-    CHECKBOX_SetTextColor(hItem, 0x00FF80FF);
+    CHECKBOX_SetTextColor(hItem, _aColor[2]);
     CHECKBOX_SetFont(hItem,&GUI_FontHZ12);
+	CHECKBOX_SetState(hItem,1);
 	// USER START (Optionally insert additional code for further widget initialization)
     // USER END
     break;
@@ -140,7 +150,7 @@ static void _cbpage2Dialog(WM_MESSAGE * pMsg) {
     NCode = pMsg->Data.v;
     switch(Id) {
     case ID_CHECKBOX_20: // Notifications sent by 'temp1'
-      switch(NCode) {
+      switch(NCode) {		  
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
         // USER END
@@ -150,8 +160,19 @@ static void _cbpage2Dialog(WM_MESSAGE * pMsg) {
         // USER END
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_20);
+		if(CHECKBOX_IsChecked(hItem))
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_20);
+			GRAPH_AttachData(hItem,tempData[0]);
+		}
+		else
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_20);
+			GRAPH_DATA_YT_Clear(tempData[0]);
+			GRAPH_DetachData(hItem,tempData[0]);
+		}
+		// USER END
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -168,8 +189,18 @@ static void _cbpage2Dialog(WM_MESSAGE * pMsg) {
         // USER END
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_21);
+		if(CHECKBOX_IsChecked(hItem))
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_20);
+			GRAPH_AttachData(hItem,tempData[1]);
+		}
+		else
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_20);
+			GRAPH_DATA_YT_Clear(tempData[1]);
+			GRAPH_DetachData(hItem,tempData[1]);			
+		}
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -186,8 +217,18 @@ static void _cbpage2Dialog(WM_MESSAGE * pMsg) {
         // USER END
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+        hItem = WM_GetDialogItem(pMsg->hWin, ID_CHECKBOX_22);
+		if(CHECKBOX_IsChecked(hItem))
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_20);
+			GRAPH_AttachData(hItem,tempData[2]);
+		}
+		else
+		{
+			hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_20);
+			GRAPH_DATA_YT_Clear(tempData[2]);
+			GRAPH_DetachData(hItem,tempData[2]);		
+		}
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END
@@ -202,9 +243,9 @@ static void _cbpage2Dialog(WM_MESSAGE * pMsg) {
 	case WM_TIMER:
 		if(WM_GetTimerId(pMsg->Data.v) == 0)
 		{
-			GRAPH_DATA_YT_AddValue(ahData[0], dht11Info.tempreture_1);
-			GRAPH_DATA_YT_AddValue(ahData[1], dht11Info.tempreture_2);
-			GRAPH_DATA_YT_AddValue(ahData[2], gy906Info.temp_to);
+			GRAPH_DATA_YT_AddValue(tempData[0], dht11Info.tempreture_1);
+			GRAPH_DATA_YT_AddValue(tempData[1], dht11Info.tempreture_2);
+			GRAPH_DATA_YT_AddValue(tempData[2], gy906Info.temp_to);
 			/* 重启定时器 */
 			WM_RestartTimer(pMsg->Data.v, 1000);
 		}
@@ -231,9 +272,9 @@ WM_HWIN Createpage2(void) {
 
   hWin = GUI_CreateDialogBox(_aDialogpage2Create, GUI_COUNTOF(_aDialogpage2Create), _cbpage2Dialog, WM_HBKWIN, 0, 0);
 	/* 创建两个定时器 */
-	WM_CreateTimer(hWin, /* 接受信息的窗口的句柄 */
-				   0, 	         /* 用户定义的Id。如果不对同一窗口使用多个定时器，此值可以设置为零。 */
-				   1000,           /* 周期，此周期过后指定窗口应收到消息*/
+	WM_CreateTimer(hWin, 			/* 接受信息的窗口的句柄 */
+				   0, 	         	/* 用户定义的Id。如果不对同一窗口使用多个定时器，此值可以设置为零。 */
+				   1000,           	/* 周期，此周期过后指定窗口应收到消息*/
 				   0);	
 	
 	return hWin;

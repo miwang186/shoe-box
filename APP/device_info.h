@@ -7,5 +7,6 @@ extern DHT11_INFO 	dht11Info;	/*DTH11*/
 extern GY_906_INFO 	gy906Info;	/*gy906*/	
 extern LED_STATUS 	ledStatus;
 extern DEVICE_STATUS deviceStatus;
+extern Warning_Info	warning_info;
 #endif
 
