@@ -115,7 +115,7 @@ u8 updata_fontx(u16 x,u16 y,u8 size,u8 *fxpath,u8 fx)
 		//356480
 		write_size = 85280;
 		flashaddr = ftinfo.f24addr+400*1024*4; 
-		while(1)//死循环执行
+		while(0)//死循环执行
 		{
 			STMFLASH_Read(STMFLASHADDR+offx,(uint16_t *)tempbuf,2048);
 

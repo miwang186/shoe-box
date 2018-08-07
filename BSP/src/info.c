@@ -36,13 +36,49 @@
 //C¿â
 #include <string.h>
 #include <stdlib.h>
+uint8_t crc_sum_(void *data, uint8_t len)
+{
+	uint8_t crcsum = 0;
+	uint8_t *p = (uint8_t *)data;
+	
+	while(len--)
+	{
+		crcsum += *p;
+		p++;
+	}
+	return crcsum;
+}
 
-//uint8_t Get_Warning_info(Warning_Info	*info)
-//{
-//	Warning_Info read_dat,sum_crc;
-//	AT24C02_ReadBytes(WARNING_INFO_ADDR, (uint8_t*)&read_dat,sizeof(Warning_Info));
-////	if(read_dat.sum_crc != read_dat.enable_flag)
-//}
+uint8_t Save_Warning_info(Warning_Info *info)
+{
+	Warning_Info read_dat;
+	
+	AT24C02_ReadBytes(WARNING_INFO_ADDR, (uint8_t*)&read_dat,sizeof(Warning_Info));
+	
+	if(rt_memcmp(info,&read_dat,sizeof(Warning_Info)) == 0)
+	{
+		return sizeof(Warning_Info);
+	}		
+	
+	info->sum_crc = crc_sum_(&info,sizeof(Warning_Info)-1);	
+	AT24C02_WriteBytes(WARNING_INFO_ADDR, (uint8_t*)info,sizeof(Warning_Info));
+	
+	return sizeof(Warning_Info);	
+}
+
+uint8_t Get_Warning_info(Warning_Info *info)
+{
+	Warning_Info read_dat;
+	
+	AT24C02_ReadBytes(WARNING_INFO_ADDR, (uint8_t*)&read_dat,sizeof(Warning_Info));
+	
+//	if(read_dat.sum_crc != crc_sum_(&read_dat,sizeof(Warning_Info)-1))
+//	{
+//		return 0;
+//	}
+	rt_memcpy(info,&read_dat,sizeof(Warning_Info));
+	return sizeof(Warning_Info);
+}
 
 
 /*

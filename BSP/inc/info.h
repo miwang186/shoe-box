@@ -61,5 +61,7 @@ _Bool Info_Read(void);
 
 _Bool Info_Alter(char *info);
 
+uint8_t Get_Warning_info(Warning_Info *info);
+uint8_t Save_Warning_info(Warning_Info *info);
 #endif 
 

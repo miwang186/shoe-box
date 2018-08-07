@@ -53,7 +53,7 @@
 
 EdpPacket *send_pkg;	//Ð­Òé°ü
 
-ONETNET_INFO oneNetInfo = {"35852269", "LwithCI7=NoIXIplbjRdDxe118g=", 0, 0, 0, 0};
+ONETNET_INFO oneNetInfo = {"38571373", "LwithCI7=NoIXIplbjRdDxe118g=", 0, 0, 0, 0};
 extern DATA_STREAM dataStream[];
 extern LED_STATUS ledStatus;
 extern DEVICE_STATUS deviceStatus;

@@ -46,7 +46,7 @@
 */
 static GRAPH_DATA_Handle  humiData[2];                         /* 用于 GRAPH_DATA 类型的句柄 */
 static GRAPH_SCALE_Handle humiVscale;
-static GUI_COLOR _hColor[2] = {GUI_DARKBLUE,GUI_DARKRED};/* 曲线的颜色值 */
+static GUI_COLOR _hColor[2] = {0xffdc78,0x00dcff};/* 曲线的颜色值 */
 // USER START (Optionally insert additional static data)
 // USER END
 
@@ -93,15 +93,16 @@ static void _cbpage3Dialog(WM_MESSAGE * pMsg) {
     // Initialization of 'allhumi'
     //
     hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_30);
-    GRAPH_SetBorder(hItem,20, 2, 2, 2);
+    GRAPH_SetBorder(hItem,2, 2, 20, 2);
 	GRAPH_SetGridDistX(hItem,20);	//网格X大小
 	GRAPH_SetGridDistY(hItem,10);	//网格Y大小
 	GRAPH_SetGridVis(hItem,1);		//显示网格
 //	GRAPH_DATA_YT_SetOffY(hItem,-10);	//Y轴数据的偏移
-//	GRAPH_SetVSizeY(hItem,80);
-	humiVscale = GRAPH_SCALE_Create(2,GUI_TA_HORIZONTAL,GRAPH_SCALE_CF_VERTICAL,20);
+	GRAPH_SetVSizeY(hItem,200);
+	humiVscale = GRAPH_SCALE_Create(281,GUI_TA_HORIZONTAL,GRAPH_SCALE_CF_VERTICAL,20);
 	GRAPH_SCALE_SetFont(humiVscale,GUI_FONT_8_ASCII);
 	GRAPH_SCALE_SetTextColor(humiVscale,GUI_BLUE);
+  	GRAPH_SCALE_SetFactor(humiVscale,0.5);
 	GRAPH_AttachScale(hItem,humiVscale); 
   
 //	humiHscale = GRAPH_SCALE_Create(2,GUI_TA_BOTTOM,GRAPH_SCALE_CF_HORIZONTAL,40);
@@ -205,8 +206,8 @@ static void _cbpage3Dialog(WM_MESSAGE * pMsg) {
 	case WM_TIMER:
 		if(WM_GetTimerId(pMsg->Data.v) == 0)
 		{
-			GRAPH_DATA_YT_AddValue(humiData[0], dht11Info.humidity_1);
-			GRAPH_DATA_YT_AddValue(humiData[1], dht11Info.humidity_2);
+			GRAPH_DATA_YT_AddValue(humiData[0], dht11Info.humidity_1*2);
+			GRAPH_DATA_YT_AddValue(humiData[1], dht11Info.humidity_2*2);
 			/* 重启定时器 */
 			WM_RestartTimer(pMsg->Data.v, 1000);
 		}

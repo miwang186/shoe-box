@@ -238,8 +238,8 @@ void NET_Task(void *pdata)
 		RTOS_TimeDly(5);													//¹ÒÆðÈÎÎñ25ms
 	
 	}
-
 }
+
 static void auto_adjust_temp()
 {
 	uint16_t temp_Average = 0;
@@ -263,7 +263,8 @@ static void auto_adjust_temp()
 		
 		if(warning_info.enable_flag & TEMP_MIN_SWITCH)
 		{	
-			if(warning_info.min_temp > temp_Average || warning_info.min_temp > gy906Info.temp_to)
+			if(warning_info.min_temp > temp_Average || \
+				(warning_info.min_temp > gy906Info.temp_to && gy906Info.temp_to > -250))
 			{
 				RELAY1_ON();
 				RELAY2_ON();
@@ -331,7 +332,7 @@ void TIMER_Task(void *pdata)
 		{
 			deviceStatus.timing_sec--;
 		}
-		else 
+		else if(warning_info.enable_flag & TIMING_MAX_SWITCH)
 		{
 			RELAY1_OFF();
 			RELAY2_OFF();

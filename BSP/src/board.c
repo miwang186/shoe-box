@@ -38,7 +38,7 @@
 #include "fontupd.h"
 #include "GUI.h"
 /*@{*/
-
+extern Warning_Info warning_info;
 /*******************************************************************************
 * Function Name  : NVIC_Configuration
 * Description    : Configures Vector Table base location.
@@ -82,7 +82,7 @@ void rt_hw_board_init(void)
 	xpt2046_Init();														//初始化xpt2046用IO口（模拟SPI、中断IO）	
 
 	SPI_Flash_Init();
-	
+//	update_font(0,0,12);
 	font_init();
 	
 	IIC_Init();					//与DHT11共用引脚
@@ -130,6 +130,7 @@ void rt_hw_board_init(void)
 								, netDeviceInfo.staName, netDeviceInfo.staPass
 								, oneNetInfo.devID, oneNetInfo.apiKey);
 	}
+	Get_Warning_info(&warning_info);
 	
 	Iwdg_Init(4, 1250); 	//64分频，每秒625次，重载1250次，2s
 

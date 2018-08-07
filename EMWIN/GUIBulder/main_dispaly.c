@@ -60,7 +60,7 @@
 static GUI_BITMAP buttonbmp_tab[2];
 static uint8_t is_button_press = 0;
 static uint8_t button_status[2] = {1,1};
-
+static uint8_t last_page_index = 0;
 // USER END
 
 /*********************************************************************
@@ -280,6 +280,7 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
     NCode = pMsg->Data.v;
     switch(Id) {
     case ID_MULTIPAGE_0: // Notifications sent by 'Multipage'
+		hItem = WM_GetDialogItem(pMsg->hWin, ID_MULTIPAGE_0);	
       switch(NCode) {
       case WM_NOTIFICATION_CLICKED:
         // USER START (Optionally insert code for reacting on notification message)
@@ -294,8 +295,12 @@ static void _cbDialog(WM_MESSAGE * pMsg) {
         // USER END
         break;
       case WM_NOTIFICATION_VALUE_CHANGED:
-        // USER START (Optionally insert code for reacting on notification message)
-        // USER END
+		value = MULTIPAGE_GetSelection(hItem);		
+		if(last_page_index == 4 && value != last_page_index)
+		{
+			Save_Warning_info(&warning_info);
+		}
+		last_page_index = value;
         break;
       // USER START (Optionally insert additional code for further notification handling)
       // USER END

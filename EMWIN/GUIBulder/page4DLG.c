@@ -45,7 +45,7 @@
 */
 static GRAPH_DATA_Handle  FrateData;                    /* 用于 GRAPH_DATA 类型的句柄 */
 static GRAPH_SCALE_Handle FrateVscale;					/*标度句柄*/
-static GUI_COLOR 		FrateColor = GUI_LIGHTCYAN;				/* 曲线的颜色值 */
+static GUI_COLOR 		FrateColor = 0x0080ff;				/* 曲线的颜色值 */
 // USER START (Optionally insert additional static data)
 // USER END
 

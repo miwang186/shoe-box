@@ -47,7 +47,7 @@
 */
 static GRAPH_DATA_Handle  tempData[3];                         /* 用于 GRAPH_DATA 类型的句柄 */
 static GRAPH_SCALE_Handle tempVscale;
-static GUI_COLOR _aColor[3] = {GUI_LIGHTGREEN,GUI_LIGHTRED,GUI_LIGHTYELLOW};/* 三种曲线的颜色值 */
+static GUI_COLOR _aColor[3] = {0xf00080,0x00f080,0x8000f0};/* 三种曲线的颜色值 */
 
 /*********************************************************************
 *
@@ -92,18 +92,19 @@ static void _cbpage2Dialog(WM_MESSAGE * pMsg) {
     WINDOW_SetBkColor(hItem, GUI_DARKCYAN);
   
     hItem = WM_GetDialogItem(pMsg->hWin, ID_GRAPH_20);
-    GRAPH_SetBorder(hItem,20, 2, 2, 2);
+    GRAPH_SetBorder(hItem,2, 2, 20, 2);
 	GRAPH_SetGridDistX(hItem,20);	//网格X大小
 	GRAPH_SetGridDistY(hItem,10);	//网格Y大小
 	GRAPH_SetGridVis(hItem,1);		//显示网格
 //	GRAPH_DATA_YT_SetOffY(hItem,-10);	//Y轴数据的偏移
-//	GRAPH_SetVSizeY(hItem,80);
+	GRAPH_SetVSizeY(hItem,170);
 	
-	tempVscale = GRAPH_SCALE_Create(2,GUI_TA_HORIZONTAL,GRAPH_SCALE_CF_VERTICAL,20);
+	tempVscale = GRAPH_SCALE_Create(281,GUI_TA_HORIZONTAL,GRAPH_SCALE_CF_VERTICAL,20);
 	GRAPH_SCALE_SetFont(tempVscale,GUI_FONT_8_ASCII);
 	GRAPH_SCALE_SetTextColor(tempVscale,GUI_BLUE);
+	GRAPH_SCALE_SetFactor(tempVscale,0.5);
 	GRAPH_AttachScale(hItem,tempVscale); 
-	
+
 //	tempHscale = GRAPH_SCALE_Create(2,GUI_TA_HORIZONTAL|GUI_TA_TOP,GRAPH_SCALE_CF_HORIZONTAL,40);
 //	GRAPH_SCALE_SetFont(tempHscale,GUI_FONT_8_ASCII);
 //	GRAPH_SCALE_SetTextColor(tempHscale,GUI_BLUE);
@@ -243,9 +244,9 @@ static void _cbpage2Dialog(WM_MESSAGE * pMsg) {
 	case WM_TIMER:
 		if(WM_GetTimerId(pMsg->Data.v) == 0)
 		{
-			GRAPH_DATA_YT_AddValue(tempData[0], dht11Info.tempreture_1);
-			GRAPH_DATA_YT_AddValue(tempData[1], dht11Info.tempreture_2);
-			GRAPH_DATA_YT_AddValue(tempData[2], gy906Info.temp_to);
+			GRAPH_DATA_YT_AddValue(tempData[0], dht11Info.tempreture_1*2);
+			GRAPH_DATA_YT_AddValue(tempData[1], dht11Info.tempreture_2*2);
+			GRAPH_DATA_YT_AddValue(tempData[2], gy906Info.temp_to*2);
 			/* 重启定时器 */
 			WM_RestartTimer(pMsg->Data.v, 1000);
 		}
