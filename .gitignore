@@ -1,3 +1,4 @@
+
 # Prerequisites
 *.d
 
@@ -30,3 +31,30 @@
 *.exe
 *.out
 *.app
+
+/Project/Objects
+/Project/Listings
+/Project/DebugConfig
+
+*.plg
+*.bak
+*.dep
+*.uvgui.*
+*.uvguix.*
+*.uvoptx
+JLinkLog.txt
+*.o
+*.d
+*.crf
+*.tra
+*.axf
+*.hex
+*.lnp
+*.sct
+*.__i
+*.htm
+*.map
+*.tmp
+*.iex
+*.bin
+*.html
